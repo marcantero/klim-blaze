@@ -176,12 +176,30 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
               return (
                 <div
                   key={index}
-                  className={`group flex items-center gap-3 rounded-lg px-3 py-1.5 transition-all ${
+                  className={`group flex items-center gap-2.5 rounded-lg px-2.5 py-1.5 transition-all ${
                     isActive
-                      ? "bg-[#1f2024] border border-[#2b2d32]"
+                      ? "bg-[#1f2024] border border-[#2b2d32] border-l-4 shadow-sm"
                       : "hover:bg-[#18191c] border border-transparent"
                   }`}
+                  style={isActive ? { borderLeftColor: stage.color } : undefined}
                 >
+                  {/* Stage Number & Active Selector Button */}
+                  <button
+                    type="button"
+                    onClick={() => isEnabled && onChange({ ...dpi, activeIndex: index })}
+                    title={isActive ? `Stage ${index + 1} is active` : `Click to activate Stage ${index + 1}`}
+                    className={`flex h-5 w-5 shrink-0 items-center justify-center rounded-full border text-[11px] font-bold font-mono transition-all ${
+                      isActive
+                        ? "border-current bg-current/20 scale-110 shadow-sm"
+                        : isEnabled
+                        ? "border-[#3f4148] text-[#9ca3af] hover:border-[#00f0ff] hover:text-white"
+                        : "border-[#2b2d32] text-[#4b4e57] opacity-40 cursor-not-allowed"
+                    }`}
+                    style={isActive ? { color: stage.color } : undefined}
+                  >
+                    {index + 1}
+                  </button>
+
                   {/* Enable / Disable Checkbox */}
                   <button
                     type="button"
@@ -227,16 +245,16 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
                     />
                   </div>
 
-                  {/* DPI Readout (Active stage highlighted in color) */}
+                  {/* DPI Readout / Clickable Activate Button */}
                   <button
                     type="button"
-                    onClick={() => onChange({ ...dpi, activeIndex: index })}
+                    onClick={() => isEnabled && onChange({ ...dpi, activeIndex: index })}
                     title={`Click to set Stage ${index + 1} as active`}
-                    className={`min-w-[60px] text-right font-mono text-xs font-black transition-all ${
+                    className={`min-w-[65px] rounded px-2 py-0.5 text-right font-mono text-xs font-black transition-all ${
                       isActive
-                        ? "scale-105"
+                        ? "scale-105 border border-current bg-black/40 shadow-sm"
                         : isEnabled
-                        ? "text-white hover:text-[#00f0ff]"
+                        ? "text-white hover:text-[#00f0ff] hover:bg-white/5"
                         : "text-[#52525b] hover:text-[#71717a]"
                     }`}
                     style={isActive ? { color: stage.color } : undefined}

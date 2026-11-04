@@ -478,8 +478,8 @@ impl HidManager {
         }
 
         let mut buf = [0u8; 64];
-        for _ in 0..6 {
-            if let Ok(n) = reader.read_timeout(&mut buf, 60) {
+        for _ in 0..8 {
+            if let Ok(n) = reader.read_timeout(&mut buf, 80) {
                 if n >= 7 && buf[0] == 0x09 && buf[1] == 0x08 && buf[4] == 0x02 {
                     let stage = buf[6] as usize;
                     return Ok(Some(stage));
@@ -888,5 +888,38 @@ mod tests {
         let payload = build_payload(CMD_EEPROM_WRITE, 0xA0, 7, &[1, 2, 3, 4, 5, 6, 7]);
         let total = REPORT_ID.wrapping_add(payload.iter().fold(0u8, |acc, &b| acc.wrapping_add(b)));
         assert_eq!(total, CHECKSUM_SEED);
+    }
+
+    #[test]
+    #[ignore]
+    fn test_live_dpi_diagnostics() {
+        let manager = HidManager::new();
+        println!("=== Listening for any incoming HID reports on 0xFF01 for 8 seconds ===");
+        
+        let mut api_guard = manager.api.lock().unwrap();
+        let api = api_guard.as_mut().unwrap();
+        let mut reader_path = None;
+        for info in api.device_list() {
+            if info.vendor_id() == VENDOR_ID && info.usage_page() == 0xFF01 {
+                reader_path = Some(info.path().to_string_lossy().into_owned());
+            }
+        }
+
+        if let Some(rpath) = reader_path {
+            let cr = CString::new(rpath).unwrap();
+            if let Ok(reader) = api.open_path(&cr) {
+                println!("Listening on 0xFF01... (press physical DPI button now!)");
+                let mut buf = [0u8; 64];
+                let start = std::time::Instant::now();
+                while start.elapsed() < Duration::from_secs(8) {
+                    if let Ok(n) = reader.read_timeout(&mut buf, 200) {
+                        if n > 0 {
+                            println!("[{:.2}s] Received {n} bytes: {:02x?}", start.elapsed().as_secs_f32(), &buf[..n]);
+                        }
+                    }
+                }
+            }
+        }
+        println!("Done listening.");
     }
 }

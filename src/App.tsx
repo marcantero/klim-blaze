@@ -15,7 +15,6 @@ import {
   getBatteryStatus,
   isTauri,
   listDevices,
-  setActiveDpiStage,
   setDpiLevels,
   setPollingRate,
 } from "./lib/api";
@@ -208,11 +207,12 @@ export default function App() {
     useEffect(() => {
       if (devices.length === 0 || !isTauri()) return;
       void syncDpiFromMouse();
+      const intervalMs = tab === "dpi" ? 600 : 2500;
       const timer = window.setInterval(() => {
         void syncDpiFromMouse();
-      }, 1500);
+      }, intervalMs);
       return () => window.clearInterval(timer);
-    }, [devices.length, syncDpiFromMouse]);
+    }, [devices.length, syncDpiFromMouse, tab]);
 
     useEffect(() => {
       if (tab === "dpi") {
@@ -339,7 +339,7 @@ export default function App() {
         dpiTouched.current = true;
         if (next.pollingRate !== dpi.pollingRate) pollingTouched.current = true;
         if (next.activeIndex !== dpi.activeIndex) {
-          void setActiveDpiStage(next.activeIndex);
+          void setDpiLevels(next.stages, next.activeIndex);
         }
         setDpi(next);
         try {
