@@ -420,7 +420,7 @@ impl HidManager {
         })
     }
 
-    /// Sets the DPI LED effect (0 = Steady, 1 = Respiration, 2 = Off) and speed (1..=5).
+    /// Sets the DPI LED effect (0 = Off, 1 = Respiration, 2 = Steady) and speed (1..=5).
     /// Stored at EEPROM address 0x4C.
     pub fn set_dpi_effect(&self, mode: u8, speed: u8) -> Result<(), String> {
         let speed_table: [u8; 5] = [0x1D, 0x20, 0x22, 0x24, 0x27];

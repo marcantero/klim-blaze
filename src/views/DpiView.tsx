@@ -25,8 +25,8 @@ const POLLING_OPTIONS: Array<{ hz: PollingRate; ms: string; label: string }> = [
 
 const DPI_EFFECT_OPTIONS = [
   { mode: 1, label: "Respiration" },
-  { mode: 0, label: "Steady" },
-  { mode: 2, label: "OFF" },
+  { mode: 2, label: "Steady" },
+  { mode: 0, label: "OFF" },
 ];
 
 function clampDpi(value: number): number {
@@ -294,9 +294,11 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
             {/* DPI Effect Speed Slider */}
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <span className="text-xs font-bold text-white">Speed</span>
-                <span className="font-mono text-xs font-bold text-[#00f0ff]">
-                  {dpiEffectSpeed} / 5
+                <span className={`text-xs font-bold ${dpiEffectMode === 0 ? "text-[#52525b]" : "text-white"}`}>
+                  Speed
+                </span>
+                <span className={`font-mono text-xs font-bold ${dpiEffectMode === 0 ? "text-[#52525b]" : "text-[#00f0ff]"}`}>
+                  {dpiEffectMode === 0 ? "OFF" : dpiEffectMode === 2 ? "STEADY" : `${dpiEffectSpeed} / 5`}
                 </span>
               </div>
               <div className="relative py-1">
@@ -305,11 +307,12 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
                   min={1}
                   max={5}
                   step={1}
+                  disabled={dpiEffectMode === 0}
                   value={dpiEffectSpeed}
                   onChange={(e) =>
                     handleDpiEffectChange(dpiEffectMode, Number(e.target.value))
                   }
-                  className="ghub-slider w-full"
+                  className={`ghub-slider w-full ${dpiEffectMode === 0 ? "opacity-30 cursor-not-allowed" : ""}`}
                   aria-label="DPI Effect Speed"
                 />
                 {/* 5 Tick marks */}
@@ -318,7 +321,11 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
                     <span
                       key={t}
                       className={`h-1.5 w-1.5 rounded-full ${
-                        dpiEffectSpeed === t ? "bg-[#00f0ff]" : "bg-[#3f4148]"
+                        dpiEffectMode === 0
+                          ? "bg-[#27272a]"
+                          : dpiEffectSpeed === t
+                          ? "bg-[#00f0ff]"
+                          : "bg-[#3f4148]"
                       }`}
                     />
                   ))}
@@ -399,7 +406,9 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
               variant="side"
               logoColor={active.color}
               color={active.color}
-              showUnderglow={true}
+              mode={dpiEffectMode === 0 ? 3 : dpiEffectMode === 1 ? 1 : 0}
+              speed={dpiEffectSpeed * 2}
+              showUnderglow={dpiEffectMode !== 0}
               className="w-full max-w-[460px] xl:max-w-[520px]"
             />
           </div>
