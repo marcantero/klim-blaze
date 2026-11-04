@@ -13,8 +13,6 @@ const PRESETS = [
   "#ffffff", // Clean White
 ];
 
-const ZONES = ["PRIMARY ZONE", "LOGO LED", "UNDERGLOW BASE"];
-
 interface ColorPickerProps {
   value: Rgb;
   onChange: (color: Rgb) => void;
@@ -85,7 +83,6 @@ function hsvToRgb(h: number, s: number, v: number): Rgb {
 
 export default function ColorPicker({ value, onChange, disabled = false }: ColorPickerProps) {
   const currentHex = rgbToHex(value);
-  const [activeZone, setActiveZone] = useState(0);
   const [hsv, setHsv] = useState(() => rgbToHsv(value.r, value.g, value.b));
   const [hexDraft, setHexDraft] = useState(currentHex);
 
@@ -148,27 +145,6 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
 
   return (
     <div className={`space-y-4 ${disabled ? "pointer-events-none opacity-40" : ""}`}>
-      {/* Zone Selection Chips (LIGHTSYNC spec) */}
-      <div className="flex flex-wrap gap-2">
-        {ZONES.map((zone, idx) => {
-          const selected = idx === activeZone;
-          return (
-            <button
-              key={zone}
-              type="button"
-              onClick={() => setActiveZone(idx)}
-              className={`rounded-full px-3 py-1 text-xs font-semibold transition-all duration-150 ${
-                selected
-                  ? "bg-[#00f0ff] text-black font-bold shadow-none"
-                  : "bg-[#1f2024] text-[#9ca3af] hover:text-white hover:bg-[#282a30]"
-              }`}
-            >
-              {zone}
-            </button>
-          );
-        })}
-      </div>
-
       {/* 2D Color Gradient Field + Vertical Rainbow Hue Slider */}
       <div className="flex gap-3">
         {/* 2D Saturation / Value Gradient Box */}

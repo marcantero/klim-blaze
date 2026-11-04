@@ -27,10 +27,9 @@ const EFFECTS: EffectOption[] = [
 interface LightingViewProps {
   lighting: LightingState;
   onChange: (lighting: LightingState) => void;
-  onApply: () => void;
 }
 
-export default function LightingView({ lighting, onChange, onApply }: LightingViewProps) {
+export default function LightingView({ lighting, onChange }: LightingViewProps) {
   const colorEnabled = lighting.mode === 0 || lighting.mode === 1;
   const speedEnabled = lighting.mode === 1 || lighting.mode === 2;
   const hex = rgbToHex(lighting.color);
@@ -38,21 +37,30 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
   return (
     <div className="grid h-full flex-1 gap-6 lg:grid-cols-[440px_minmax(0,1fr)]">
       {/* Left Control Rail */}
-      <div className="flex flex-col justify-between space-y-4">
-        <div className="space-y-4">
-          {/* Effect Selector Card */}
-          <section className="card-hardware p-5">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <Sparkles size={16} className="text-[#00f0ff]" />
-                <h2 className="text-xs font-bold uppercase tracking-wider text-white">
-                  EFFECT
-                </h2>
-              </div>
+      <div className="space-y-4">
+        {/* Effect Selector Card */}
+        <section className="card-hardware p-5">
+          <div className="mb-4 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <Sparkles size={16} className="text-[#00f0ff]" />
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+                EFFECT
+              </h2>
+            </div>
+            <div className="flex items-center gap-3">
               <span className="text-xs font-bold tracking-wider text-[#00f0ff]">
                 {LIGHT_MODE_LABELS[lighting.mode]}
               </span>
+              <button
+                type="button"
+                onClick={() => onChange(DEFAULT_LIGHTING)}
+                title="Reset to default lighting"
+                className="text-[#71717a] hover:text-white transition-colors p-1"
+              >
+                <RotateCcw size={13} />
+              </button>
             </div>
+          </div>
 
             <div className="grid grid-cols-2 gap-2.5">
               {EFFECTS.map(({ mode, title, icon: Icon, description }) => {
@@ -138,33 +146,6 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
             </div>
           </section>
         </div>
-
-        {/* Action Buttons Panel */}
-        <div className="flex items-center justify-between rounded-xl border border-[#2b2d32] bg-[#18191c] p-4 mt-auto">
-          <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span>Synced with mouse memory</span>
-          </div>
-          <div className="flex gap-2.5">
-            <button
-              type="button"
-              className="btn-ghub"
-              onClick={() => onChange(DEFAULT_LIGHTING)}
-              title="Reset to default settings"
-            >
-              <RotateCcw size={13} />
-              Reset
-            </button>
-            <button
-              type="button"
-              className="btn-ghub-primary"
-              onClick={onApply}
-            >
-              Apply
-            </button>
-          </div>
-        </div>
-      </div>
 
       {/* Main Hardware Stage Column */}
       <div className="flex flex-col h-full">

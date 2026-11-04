@@ -33,10 +33,9 @@ function clampDpi(value: number): number {
 interface DpiViewProps {
   dpi: DpiState;
   onChange: (dpi: DpiState) => void;
-  onApply: () => void;
 }
 
-export default function DpiView({ dpi, onChange, onApply }: DpiViewProps) {
+export default function DpiView({ dpi, onChange }: DpiViewProps) {
   const activeIndex = Math.min(dpi.activeIndex, dpi.stages.length - 1);
   const active = dpi.stages[activeIndex];
   const [draft, setDraft] = useState(() => String(active.dpi));
@@ -273,17 +272,6 @@ export default function DpiView({ dpi, onChange, onApply }: DpiViewProps) {
               })}
             </div>
           </section>
-        </div>
-
-        {/* Action Commit Panel */}
-        <div className="flex items-center justify-between rounded-xl border border-[#2b2d32] bg-[#18191c] p-4 mt-auto">
-          <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
-            <span className="h-2 w-2 rounded-full bg-emerald-400" />
-            <span>Applied directly to mouse controller</span>
-          </div>
-          <button type="button" className="btn-ghub-primary" onClick={onApply}>
-            Save to Device
-          </button>
         </div>
       </div>
 

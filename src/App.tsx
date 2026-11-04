@@ -186,8 +186,8 @@ export default function App() {
         }
       })();
     },
-    [dpi.stages, devices.length],
-    30
+    [dpi.stages, dpi.activeIndex, devices.length],
+    40
   );
 
   useDebouncedEffect(
@@ -220,39 +220,6 @@ export default function App() {
     },
     [dpi.pollingRate]
   );
-
-  const applyLightingNow = useCallback(async () => {
-    if (devices.length === 0) {
-      notify("error", "No mouse detected", "Connect the device and press rescan.");
-      return;
-    }
-    try {
-      await applyRgb(lighting);
-      notify("success", "Lighting applied");
-    } catch (error) {
-      reportHidError(error);
-    }
-  }, [devices.length, lighting, notify, reportHidError]);
-
-  const applyDpiNow = useCallback(async () => {
-    if (devices.length === 0) {
-      notify("error", "No mouse detected", "Connect the device and press rescan.");
-      return;
-    }
-    try {
-      const applied = await setDpiLevels(dpi.stages, dpi.activeIndex);
-      setDpi((current) => ({
-        ...current,
-        stages: current.stages.map((stage, index) =>
-          applied[index] !== undefined ? { ...stage, dpi: applied[index] } : stage
-        ),
-      }));
-      await setPollingRate(dpi.pollingRate);
-      notify("success", "Sensitivity applied");
-    } catch (error) {
-      reportHidError(error);
-    }
-  }, [devices.length, dpi, notify, reportHidError]);
 
   // ---- profiles -----------------------------------------------------------------
 
@@ -343,13 +310,12 @@ export default function App() {
         <LightingView
           lighting={lighting}
           onChange={changeLighting}
-          onApply={() => void applyLightingNow()}
         />
       );
       break;
     case "dpi":
       content = (
-        <DpiView dpi={dpi} onChange={changeDpi} onApply={() => void applyDpiNow()} />
+        <DpiView dpi={dpi} onChange={changeDpi} />
       );
       break;
     case "keys":

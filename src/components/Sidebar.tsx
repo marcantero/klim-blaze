@@ -23,14 +23,16 @@ interface SidebarProps {
 export default function Sidebar({ active, onChange }: SidebarProps) {
   return (
     <nav className="flex w-[80px] shrink-0 flex-col items-center border-r border-[#2b2d32]/50 bg-[#0c0d0f] py-6 select-none">
-      {/* Brand Icon Header (Logitech G style minimalist emblem) */}
+      {/* Brand Icon Header: Circular #000E41 background with white logo */}
       <div
-        className="mb-8 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 transition-transform duration-150 hover:scale-105"
-        title="KLIM Blaze Peripheral Configurator"
+        className="mb-8 flex h-11 w-11 items-center justify-center rounded-full border border-[#0f1d5e] bg-[#000E41] shadow-sm transition-transform duration-150 hover:scale-105"
+        title="KLIM Blaze"
       >
-        <span className="font-sans text-base font-black tracking-tight text-[#00f0ff]">
-          KB
-        </span>
+        <img
+          src="/images/logo.png"
+          alt="KLIM Blaze Logo"
+          className="h-6 w-6 object-contain"
+        />
       </div>
 
       {/* Navigation tabs */}
