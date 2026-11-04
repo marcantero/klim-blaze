@@ -110,9 +110,13 @@ export async function resetButtonBindings(): Promise<void> {
   await call<void>("reset_button_bindings");
 }
 
-export async function setDpiEffect(mode: number, speed: number): Promise<void> {
+export async function setDpiEffect(
+  mode: number,
+  speed: number,
+  brightness: number = 10
+): Promise<void> {
   if (!isTauri()) return;
-  await call<void>("set_dpi_effect", { mode, speed });
+  await call<void>("set_dpi_effect", { mode, speed, brightness });
 }
 
 export async function getSystemPointerSettings(): Promise<{

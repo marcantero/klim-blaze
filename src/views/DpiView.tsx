@@ -52,6 +52,7 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
   // DPI Effect state (EEPROM 0x4C)
   const [dpiEffectMode, setDpiEffectMode] = useState<number>(1);
   const [dpiEffectSpeed, setDpiEffectSpeed] = useState<number>(3);
+  const [dpiEffectBrightness, setDpiEffectBrightness] = useState<number>(10);
 
   // Hidden native color picker input ref
   const colorInputRef = useRef<HTMLInputElement>(null);
@@ -82,10 +83,15 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
     void setSystemPointerSettings(updated);
   };
 
-  const handleDpiEffectChange = (mode: number, speed: number) => {
+  const handleDpiEffectChange = (
+    mode: number,
+    speed: number,
+    brightness: number = dpiEffectBrightness
+  ) => {
     setDpiEffectMode(mode);
     setDpiEffectSpeed(speed);
-    void setDpiEffect(mode, speed);
+    setDpiEffectBrightness(brightness);
+    void setDpiEffect(mode, speed, brightness);
   };
 
   const handleTestDoubleClick = () => {
@@ -269,7 +275,7 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
           {/* Divider */}
           <div className="my-3.5 border-t border-[#2b2d32]/60" />
 
-          {/* DPI Effect & Speed Controls */}
+          {/* DPI Effect & Parameter Controls (Speed for Respiration, Brightness for Steady, Disabled for OFF) */}
           <div className="grid grid-cols-2 gap-4 items-center">
             {/* DPI Effect Dropdown */}
             <div>
@@ -279,7 +285,7 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
               <select
                 value={dpiEffectMode}
                 onChange={(e) =>
-                  handleDpiEffectChange(Number(e.target.value), dpiEffectSpeed)
+                  handleDpiEffectChange(Number(e.target.value), dpiEffectSpeed, dpiEffectBrightness)
                 }
                 className="w-full rounded-lg border border-[#2b2d32] bg-[#141518] px-3 py-2 text-xs font-medium text-white focus:border-[#00f0ff] focus:outline-none"
               >
@@ -291,46 +297,86 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
               </select>
             </div>
 
-            {/* DPI Effect Speed Slider */}
+            {/* DPI Effect Dynamic Parameter Slider (Speed or Brightness) */}
             <div>
-              <div className="mb-1.5 flex items-center justify-between">
-                <span className={`text-xs font-bold ${dpiEffectMode === 0 ? "text-[#52525b]" : "text-white"}`}>
-                  Speed
-                </span>
-                <span className={`font-mono text-xs font-bold ${dpiEffectMode === 0 ? "text-[#52525b]" : "text-[#00f0ff]"}`}>
-                  {dpiEffectMode === 0 ? "OFF" : dpiEffectMode === 2 ? "STEADY" : `${dpiEffectSpeed} / 5`}
-                </span>
-              </div>
-              <div className="relative py-1">
-                <input
-                  type="range"
-                  min={1}
-                  max={5}
-                  step={1}
-                  disabled={dpiEffectMode === 0}
-                  value={dpiEffectSpeed}
-                  onChange={(e) =>
-                    handleDpiEffectChange(dpiEffectMode, Number(e.target.value))
-                  }
-                  className={`ghub-slider w-full ${dpiEffectMode === 0 ? "opacity-30 cursor-not-allowed" : ""}`}
-                  aria-label="DPI Effect Speed"
-                />
-                {/* 5 Tick marks */}
-                <div className="mt-1 flex justify-between px-0.5">
-                  {[1, 2, 3, 4, 5].map((t) => (
-                    <span
-                      key={t}
-                      className={`h-1.5 w-1.5 rounded-full ${
-                        dpiEffectMode === 0
-                          ? "bg-[#27272a]"
-                          : dpiEffectSpeed === t
-                          ? "bg-[#00f0ff]"
-                          : "bg-[#3f4148]"
-                      }`}
+              {dpiEffectMode === 2 ? (
+                /* Steady Mode: Brightness Control (1..10) */
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className="text-xs font-bold text-white">Brightness</span>
+                    <span className="font-mono text-xs font-bold text-[#00f0ff]">
+                      {dpiEffectBrightness * 10}%
+                    </span>
+                  </div>
+                  <div className="relative py-1">
+                    <input
+                      type="range"
+                      min={1}
+                      max={10}
+                      step={1}
+                      value={dpiEffectBrightness}
+                      onChange={(e) =>
+                        handleDpiEffectChange(dpiEffectMode, dpiEffectSpeed, Number(e.target.value))
+                      }
+                      className="ghub-slider w-full"
+                      aria-label="DPI Steady Brightness"
                     />
-                  ))}
+                    {/* 5 main ticks */}
+                    <div className="mt-1 flex justify-between px-0.5">
+                      {[1, 3, 5, 8, 10].map((t) => (
+                        <span
+                          key={t}
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            dpiEffectBrightness >= t ? "bg-[#00f0ff]" : "bg-[#3f4148]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
                 </div>
-              </div>
+              ) : (
+                /* Respiration Mode: Speed Control (1..5) OR OFF Mode: Disabled */
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <span className={`text-xs font-bold ${dpiEffectMode === 0 ? "text-[#52525b]" : "text-white"}`}>
+                      Speed
+                    </span>
+                    <span className={`font-mono text-xs font-bold ${dpiEffectMode === 0 ? "text-[#52525b]" : "text-[#00f0ff]"}`}>
+                      {dpiEffectMode === 0 ? "OFF" : `${dpiEffectSpeed} / 5`}
+                    </span>
+                  </div>
+                  <div className="relative py-1">
+                    <input
+                      type="range"
+                      min={1}
+                      max={5}
+                      step={1}
+                      disabled={dpiEffectMode === 0}
+                      value={dpiEffectSpeed}
+                      onChange={(e) =>
+                        handleDpiEffectChange(dpiEffectMode, Number(e.target.value), dpiEffectBrightness)
+                      }
+                      className={`ghub-slider w-full ${dpiEffectMode === 0 ? "opacity-30 cursor-not-allowed" : ""}`}
+                      aria-label="DPI Effect Speed"
+                    />
+                    {/* 5 Tick marks */}
+                    <div className="mt-1 flex justify-between px-0.5">
+                      {[1, 2, 3, 4, 5].map((t) => (
+                        <span
+                          key={t}
+                          className={`h-1.5 w-1.5 rounded-full ${
+                            dpiEffectMode === 0
+                              ? "bg-[#27272a]"
+                              : dpiEffectSpeed === t
+                              ? "bg-[#00f0ff]"
+                              : "bg-[#3f4148]"
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -408,6 +454,7 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
               color={active.color}
               mode={dpiEffectMode === 0 ? 3 : dpiEffectMode === 1 ? 1 : 0}
               speed={dpiEffectSpeed * 2}
+              brightness={dpiEffectBrightness}
               showUnderglow={dpiEffectMode !== 0}
               className="w-full max-w-[460px] xl:max-w-[520px]"
             />

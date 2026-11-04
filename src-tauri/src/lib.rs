@@ -106,8 +106,10 @@ async fn set_dpi_effect(
     state: State<'_, HidManager>,
     mode: u8,
     speed: u8,
+    brightness: Option<u8>,
 ) -> Result<(), String> {
-    state.set_dpi_effect(mode, speed)
+    let b = brightness.unwrap_or(10);
+    state.set_dpi_effect(mode, speed, b)
 }
 
 #[tauri::command]

@@ -420,20 +420,23 @@ impl HidManager {
         })
     }
 
-    /// Sets the DPI LED effect (0 = Off, 1 = Respiration, 2 = Steady) and speed (1..=5).
+    /// Sets the DPI LED effect (0 = Off, 1 = Respiration, 2 = Steady), speed (1..=5) and brightness (1..=10).
     /// Stored at EEPROM address 0x4C.
-    pub fn set_dpi_effect(&self, mode: u8, speed: u8) -> Result<(), String> {
+    pub fn set_dpi_effect(&self, mode: u8, speed: u8, brightness: u8) -> Result<(), String> {
         let speed_table: [u8; 5] = [0x1D, 0x20, 0x22, 0x24, 0x27];
         let speed_idx = (speed.saturating_sub(1) as usize).min(4);
         let speed_code = speed_table[speed_idx];
+
+        let b_idx = brightness.clamp(1, 10) as usize;
+        let brightness_code = BRIGHTNESS_TABLE[b_idx];
 
         let block = [
             mode,
             CHECKSUM_SEED.wrapping_sub(mode),
             speed_code,
             CHECKSUM_SEED.wrapping_sub(speed_code),
-            0x00,
-            CHECKSUM_SEED,
+            brightness_code,
+            CHECKSUM_SEED.wrapping_sub(brightness_code),
         ];
 
         self.with_device(|device| write_eeprom(device, 0x4C, &block, 6))
