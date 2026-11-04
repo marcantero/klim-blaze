@@ -1,19 +1,18 @@
-import { Crosshair, Keyboard, Sparkles, Settings, Terminal } from "lucide-react";
+import { Crosshair, Keyboard, Sparkles, Settings } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import type { TabId } from "../types";
 
 interface TabItem {
   id: TabId;
-  index: string;
   label: string;
   icon: LucideIcon;
 }
 
 const TABS: TabItem[] = [
-  { id: "lighting", index: "01", label: "LIGHTSYNC", icon: Sparkles },
-  { id: "dpi", index: "02", label: "SENSITIVITY", icon: Crosshair },
-  { id: "keys", index: "03", label: "ASSIGNMENTS", icon: Keyboard },
-  { id: "settings", index: "04", label: "DEVICE", icon: Settings },
+  { id: "lighting", label: "LIGHTSYNC", icon: Sparkles },
+  { id: "dpi", label: "SENSITIVITY", icon: Crosshair },
+  { id: "keys", label: "ASSIGNMENTS", icon: Keyboard },
+  { id: "settings", label: "DEVICE", icon: Settings },
 ];
 
 interface SidebarProps {
@@ -23,21 +22,20 @@ interface SidebarProps {
 
 export default function Sidebar({ active, onChange }: SidebarProps) {
   return (
-    <nav className="flex w-[82px] shrink-0 flex-col items-center border-r border-[#1b212e] bg-[#07080c] py-4 select-none font-mono">
-      {/* Precision Instrument Badge */}
+    <nav className="flex w-[80px] shrink-0 flex-col items-center border-r border-[#2b2d32]/50 bg-[#0c0d0f] py-6 select-none">
+      {/* Brand Icon Header (Logitech G style minimalist emblem) */}
       <div
-        className="mb-6 flex h-10 w-10 flex-col items-center justify-center rounded-none border border-[#1f2636] bg-[#0c0f16] transition-colors hover:border-[#00b8fc]"
-        title="KLIM Blaze Hardware Interface"
+        className="mb-8 flex h-11 w-11 items-center justify-center rounded-xl border border-[#00f0ff]/30 bg-[#00f0ff]/10 transition-transform duration-150 hover:scale-105"
+        title="KLIM Blaze Peripheral Configurator"
       >
-        <span className="text-[12px] font-black tracking-tight text-[#00b8fc]">
+        <span className="font-sans text-base font-black tracking-tight text-[#00f0ff]">
           KB
         </span>
-        <span className="text-[7px] text-[#4d576e]">RACK</span>
       </div>
 
-      {/* Navigation Modules */}
-      <div className="flex w-full flex-col gap-1 px-1.5">
-        {TABS.map(({ id, index, label, icon: Icon }) => {
+      {/* Navigation tabs */}
+      <div className="flex w-full flex-col gap-2 px-2">
+        {TABS.map(({ id, label, icon: Icon }) => {
           const isActive = id === active;
           return (
             <button
@@ -45,35 +43,28 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
               type="button"
               onClick={() => onChange(id)}
               aria-current={isActive ? "page" : undefined}
-              className={`group relative flex w-full flex-col items-center gap-1.5 rounded-none py-3 px-1 transition-all ${
+              className={`group relative flex w-full flex-col items-center gap-1.5 rounded-xl py-3 px-1 transition-all duration-150 ${
                 isActive
-                  ? "bg-[#11151f] text-white"
-                  : "text-[#586278] hover:bg-[#0c0e14] hover:text-[#b5bfd4]"
+                  ? "bg-[#18191c] text-white"
+                  : "text-[#71717a] hover:bg-[#141518] hover:text-[#d4d4d8]"
               }`}
             >
-              {/* Active Cyan Hairline Accent */}
+              {/* Active electric cyan line on left edge */}
               {isActive && (
                 <span
-                  className="absolute left-0 top-0 bottom-0 w-[2px] bg-[#00b8fc] shadow-[0_0_8px_#00b8fc]"
+                  className="absolute left-0 top-1/2 h-7 w-[3px] -translate-y-1/2 rounded-r-full bg-[#00f0ff] shadow-[0_0_8px_#00f0ff]"
                 />
               )}
-
-              <div className="flex items-center gap-1">
-                <span className={`text-[8px] tracking-tighter ${isActive ? "text-[#00b8fc]" : "text-[#3f4758]"}`}>
-                  {index}
-                </span>
-                <Icon
-                  size={17}
-                  strokeWidth={isActive ? 2.2 : 1.7}
-                  className={`transition-colors ${
-                    isActive ? "text-[#00b8fc] drop-shadow-[0_0_6px_rgba(0,184,252,0.5)]" : "text-[#586278] group-hover:text-zinc-300"
-                  }`}
-                />
-              </div>
-
+              <Icon
+                size={20}
+                strokeWidth={isActive ? 2.4 : 1.8}
+                className={`transition-colors ${
+                  isActive ? "text-[#00f0ff]" : "text-[#71717a] group-hover:text-zinc-200"
+                }`}
+              />
               <span
-                className={`text-[8px] font-bold tracking-widest text-center leading-none uppercase ${
-                  isActive ? "text-white" : "text-[#657187] group-hover:text-zinc-300"
+                className={`text-[9px] font-bold tracking-wider text-center leading-tight transition-colors ${
+                  isActive ? "text-white" : "text-[#71717a] group-hover:text-zinc-200"
                 }`}
               >
                 {label}
@@ -85,8 +76,8 @@ export default function Sidebar({ active, onChange }: SidebarProps) {
 
       {/* Footer System Status */}
       <div className="mt-auto flex flex-col items-center gap-1 text-center">
-        <Terminal size={11} className="text-[#3b4456]" />
-        <span className="text-[8px] tracking-wider text-[#353e50]">HID 2.0</span>
+        <span className="text-[10px] font-bold tracking-widest text-[#52525b]">G-HUB</span>
+        <span className="text-[9px] font-mono text-[#3f3f46]">v2.2</span>
       </div>
     </nav>
   );

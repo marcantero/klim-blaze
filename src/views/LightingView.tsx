@@ -1,4 +1,4 @@
-import { Power, Rainbow, RotateCcw, Sun, Wind } from "lucide-react";
+import { Power, Rainbow, RotateCcw, Sun, Wind, Sparkles } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import ColorPicker from "../components/ColorPicker";
 import MousePreview from "../components/MousePreview";
@@ -12,17 +12,16 @@ import {
 
 interface EffectOption {
   mode: LightMode;
-  code: string;
   title: string;
   icon: LucideIcon;
   description: string;
 }
 
 const EFFECTS: EffectOption[] = [
-  { mode: 0, code: "MOD-00", title: "STATIC", icon: Sun, description: "Continuous static illumination" },
-  { mode: 1, code: "MOD-01", title: "BREATHE", icon: Wind, description: "Cyclic breathing pulse" },
-  { mode: 2, code: "MOD-02", title: "SPECTRUM", icon: Rainbow, description: "Full RGB spectrum rotation" },
-  { mode: 3, code: "MOD-03", title: "OFF", icon: Power, description: "Power off LEDs to save battery" },
+  { mode: 0, title: "STATIC", icon: Sun, description: "Solid static color illumination" },
+  { mode: 1, title: "BREATHE", icon: Wind, description: "Soft rhythmic pulse animation" },
+  { mode: 2, title: "SPECTRUM", icon: Rainbow, description: "Continuous RGB color spectrum" },
+  { mode: 3, title: "OFF", icon: Power, description: "Turn off LEDs to save battery" },
 ];
 
 interface LightingViewProps {
@@ -37,50 +36,51 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
   const hex = rgbToHex(lighting.color);
 
   return (
-    <div className="grid h-full flex-1 gap-6 lg:grid-cols-[420px_minmax(0,1fr)] font-mono">
-      {/* Rack Controls Column */}
+    <div className="grid h-full flex-1 gap-6 lg:grid-cols-[440px_minmax(0,1fr)]">
+      {/* Left Control Rail */}
       <div className="flex flex-col justify-between space-y-4">
         <div className="space-y-4">
-          {/* Module Header & Effect Selector */}
-          <section className="panel-instrument p-5">
-            <div className="mb-4 flex items-center justify-between border-b border-[#1b2230] pb-3">
+          {/* Effect Selector Card */}
+          <section className="card-hardware p-5">
+            <div className="mb-4 flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold tracking-widest text-[#00b8fc]">
-                  [ 01 // LIGHTSYNC ]
-                </span>
+                <Sparkles size={16} className="text-[#00f0ff]" />
+                <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+                  EFFECT
+                </h2>
               </div>
-              <span className="text-[10px] text-[#55637e]">
-                REG: 0x08/0x07
+              <span className="text-xs font-bold tracking-wider text-[#00f0ff]">
+                {LIGHT_MODE_LABELS[lighting.mode]}
               </span>
             </div>
 
             <div className="grid grid-cols-2 gap-2.5">
-              {EFFECTS.map(({ mode, code, title, icon: Icon, description }) => {
+              {EFFECTS.map(({ mode, title, icon: Icon, description }) => {
                 const selected = lighting.mode === mode;
                 return (
                   <button
                     key={mode}
                     type="button"
                     onClick={() => onChange({ ...lighting, mode })}
-                    className={`group relative flex flex-col items-start gap-1 rounded-none border p-3.5 text-left transition-all ${
+                    className={`group relative flex flex-col items-start gap-1 rounded-xl border p-3.5 text-left transition-all duration-150 ${
                       selected
-                        ? "border-[#00b8fc] bg-[#00b8fc]/10 text-white"
-                        : "border-[#1b2230] bg-[#090b10] text-[#717e99] hover:border-[#2a354c] hover:text-[#c4cedf]"
+                        ? "border-[#00f0ff] bg-[#00f0ff]/10 text-white"
+                        : "border-[#2b2d32] bg-[#1f2024] text-[#9ca3af] hover:border-[#3f424a] hover:text-white"
                     }`}
                   >
-                    <div className="flex w-full items-center justify-between">
-                      <span className="text-[8px] tracking-wider text-[#4d5973]">
-                        {code}
-                      </span>
+                    <div className="flex w-full items-center justify-between mb-0.5">
                       <Icon
-                        size={15}
-                        className={selected ? "text-[#00b8fc]" : "text-[#58647e]"}
+                        size={17}
+                        className={selected ? "text-[#00f0ff]" : "text-[#71717a] group-hover:text-zinc-200"}
                       />
+                      {selected && (
+                        <span className="h-1.5 w-1.5 rounded-full bg-[#00f0ff] shadow-[0_0_6px_#00f0ff]" />
+                      )}
                     </div>
-                    <span className={`text-xs font-bold tracking-wider ${selected ? "text-white" : "text-[#c2cbdb]"}`}>
+                    <span className={`text-xs font-bold tracking-wide ${selected ? "text-white" : "text-[#e4e4e7]"}`}>
                       {title}
                     </span>
-                    <span className="text-[9px] leading-snug text-[#54607a]">
+                    <span className="text-[10px] leading-tight text-[#71717a]">
                       {description}
                     </span>
                   </button>
@@ -89,14 +89,14 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
             </div>
           </section>
 
-          {/* Color Matrix */}
-          <section className={`panel-instrument p-5 transition-opacity ${!colorEnabled ? "opacity-35" : ""}`}>
-            <div className="mb-3.5 flex items-center justify-between border-b border-[#1b2230] pb-2.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7987a4]">
-                COLOR MATRIX
-              </span>
+          {/* LIGHTSYNC 2D Color Picker Card */}
+          <section className={`card-hardware p-5 transition-opacity duration-150 ${!colorEnabled ? "opacity-35" : ""}`}>
+            <div className="mb-4 flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+                COLOR
+              </h2>
               {colorEnabled && (
-                <span className="text-[10px] font-bold text-[#00b8fc]">
+                <span className="font-mono text-xs font-bold text-[#00f0ff]">
                   {hex.toUpperCase()}
                 </span>
               )}
@@ -108,14 +108,14 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
             />
           </section>
 
-          {/* Animation Frequency / Speed Potentiometer */}
-          <section className={`panel-instrument p-5 transition-opacity ${!speedEnabled ? "opacity-35" : ""}`}>
-            <div className="mb-3 flex items-center justify-between border-b border-[#1b2230] pb-2.5">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-[#7987a4]">
-                OSCILLATION FREQUENCY
-              </span>
-              <span className="text-[11px] font-bold text-[#00b8fc]">
-                {lighting.speed.toString().padStart(2, "0")} / 10
+          {/* Animation Rate Slider */}
+          <section className={`card-hardware p-5 transition-opacity duration-150 ${!speedEnabled ? "opacity-35" : ""}`}>
+            <div className="mb-3 flex items-center justify-between">
+              <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+                RATE
+              </h2>
+              <span className="font-mono text-xs font-bold text-[#00f0ff]">
+                {lighting.speed} / 10
               </span>
             </div>
 
@@ -128,65 +128,66 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
                 value={lighting.speed}
                 disabled={!speedEnabled}
                 onChange={(event) => onChange({ ...lighting, speed: Number(event.target.value) })}
-                className="w-full h-1.5 appearance-none bg-[#1b2230] cursor-pointer rounded-none disabled:cursor-not-allowed"
+                className="ghub-slider w-full"
                 aria-label="Animation speed"
               />
-              {/* Calibration graduation marks */}
-              <div className="flex justify-between text-[8px] text-[#4d5973]">
-                {Array.from({ length: 10 }).map((_, i) => (
-                  <span key={i} className={i + 1 === lighting.speed ? "text-[#00b8fc] font-bold" : ""}>
-                    {(i + 1).toString().padStart(2, "0")}
-                  </span>
-                ))}
+              <div className="flex justify-between text-[10px] font-semibold uppercase tracking-wider text-[#71717a]">
+                <span>Slow</span>
+                <span>Fast</span>
               </div>
             </div>
           </section>
         </div>
 
-        {/* Bus Commit Action Panel */}
-        <div className="flex items-center justify-between border border-[#1b2230] bg-[#0a0c12] p-3.5 mt-auto">
-          <div className="flex items-center gap-2 text-[10px] text-[#63708a]">
-            <span className="h-1.5 w-1.5 rounded-none bg-emerald-400 shadow-[0_0_6px_#34d399]" />
-            <span>NVRAM SYNCHRONIZED</span>
+        {/* Action Buttons Panel */}
+        <div className="flex items-center justify-between rounded-xl border border-[#2b2d32] bg-[#18191c] p-4 mt-auto">
+          <div className="flex items-center gap-2 text-xs text-[#9ca3af]">
+            <span className="h-2 w-2 rounded-full bg-emerald-400" />
+            <span>Synced with mouse memory</span>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2.5">
             <button
               type="button"
-              className="btn px-3 py-1.5 text-[11px]"
+              className="btn-ghub"
               onClick={() => onChange(DEFAULT_LIGHTING)}
-              title="Reset to factory defaults"
+              title="Reset to default settings"
             >
-              <RotateCcw size={11} />
-              RESET
+              <RotateCcw size={13} />
+              Reset
             </button>
             <button
               type="button"
-              className="btn btn-primary px-3.5 py-1.5 text-[11px]"
+              className="btn-ghub-primary"
               onClick={onApply}
             >
-              COMMIT // 0x55
+              Apply
             </button>
           </div>
         </div>
       </div>
 
-      {/* Main Hardware Visual Stage Column (CAD / Instrument viewport) */}
+      {/* Main Hardware Stage Column */}
       <div className="flex flex-col h-full">
-        <div className="panel-instrument corner-reticle relative flex flex-1 flex-col items-center justify-between p-8 overflow-hidden">
-          {/* Top Stage Indicators */}
-          <div className="flex w-full items-center justify-between border-b border-[#1b2230]/70 pb-3">
-            <div className="flex items-center gap-3 text-[10px] tracking-wider text-[#525f7a]">
-              <span>VIEWPORT // 1:1 CAD HARDWARE STAGE</span>
-              <span className="text-[#323a4d]">|</span>
-              <span>CALIBRATION: ACTIVE</span>
+        <div className="card-hardware relative flex flex-1 flex-col items-center justify-between p-8 overflow-hidden">
+          {/* Top-Left Device Stats Placement (Skill Requirement) */}
+          <div className="flex w-full items-center justify-between border-b border-[#2b2d32]/50 pb-4">
+            <div>
+              <h1 className="text-sm font-black tracking-wider text-white">
+                KLIM BLAZE WIRELESS
+              </h1>
+              <p className="text-[11px] font-medium text-[#71717a] mt-0.5">
+                LIGHTSYNC RGB • 16.8M COLORS
+              </p>
             </div>
-            <span className="badge-tech text-[#00b8fc]">
-              {LIGHT_MODE_LABELS[lighting.mode].toUpperCase()}
-            </span>
+            <div className="flex items-center gap-2">
+              <span className="rounded-full bg-[#1f2024] border border-[#2b2d32] px-3 py-1 text-xs font-bold text-[#00f0ff]">
+                {LIGHT_MODE_LABELS[lighting.mode].toUpperCase()}
+              </span>
+            </div>
           </div>
 
-          {/* Mouse Hardware Stage */}
-          <div className="my-auto flex w-full flex-1 items-center justify-center py-4">
+          {/* Mouse Hardware Stage Render */}
+          <div className="my-auto flex w-full flex-1 items-center justify-center py-6">
             <MousePreview
               color={hex}
               mode={lighting.mode}
@@ -196,23 +197,20 @@ export default function LightingView({ lighting, onChange, onApply }: LightingVi
             />
           </div>
 
-          {/* Telemetry Footer Spec Bar */}
-          <div className="flex w-full items-center justify-between border border-[#1b2230] bg-[#07090e] px-5 py-3 text-[10px]">
+          {/* Footer Active Spec Pill */}
+          <div className="flex w-full items-center justify-between rounded-xl border border-[#2b2d32] bg-[#1f2024] px-5 py-3 text-xs">
             <div className="flex items-center gap-2.5">
               <span
-                className="h-2.5 w-2.5 rounded-none border border-white/20"
+                className="h-3 w-3 rounded-full border border-white/20 shadow-sm"
                 style={{ backgroundColor: lighting.mode === 3 ? "transparent" : hex }}
               />
-              <span className="text-white font-bold tracking-wider">
-                {LIGHT_MODE_LABELS[lighting.mode].toUpperCase()}
+              <span className="text-white font-bold">
+                {LIGHT_MODE_LABELS[lighting.mode]}
               </span>
             </div>
-            <div className="flex items-center gap-4 text-[11px]">
-              <span className="text-[#55637e]">TELEMETRY REG:</span>
-              <span className="font-bold text-[#00b8fc] tracking-wider">
-                {lighting.mode === 3 ? "DISABLED" : hex.toUpperCase()}
-              </span>
-            </div>
+            <span className="font-mono font-bold tracking-wider text-[#00f0ff]">
+              {lighting.mode === 3 ? "DISABLED" : hex.toUpperCase()}
+            </span>
           </div>
         </div>
       </div>

@@ -14,38 +14,42 @@ interface Binding {
   label: string;
   action: string;
   icon: LucideIcon;
-  signal: string;
+  badge: string;
 }
 
 const BINDINGS: Binding[] = [
-  { id: 1, label: "Left click", action: "PRIMARY BUTTON (MOUSE_L)", signal: "0x0001", icon: MousePointer2 },
-  { id: 2, label: "Right click", action: "SECONDARY BUTTON (MOUSE_R)", signal: "0x0002", icon: MousePointer2 },
-  { id: 3, label: "Middle click", action: "WHEEL CLICK (MOUSE_M)", signal: "0x0004", icon: MousePointer2 },
-  { id: 4, label: "Scroll up", action: "ROTARY ENCODER UP", signal: "0x0008", icon: ChevronUp },
-  { id: 5, label: "Scroll down", action: "ROTARY ENCODER DOWN", signal: "0x0010", icon: ChevronDown },
-  { id: 6, label: "Top button", action: "DPI STAGE INCREMENT", signal: "0x0020", icon: Crosshair },
-  { id: 7, label: "Bottom button", action: "DPI CYCLE / TOGGLE", signal: "0x0040", icon: RotateCw },
-  { id: 8, label: "Forward side", action: "BROWSER FORWARD (X2)", signal: "0x0080", icon: Shield },
-  { id: 9, label: "Backward side", action: "BROWSER BACK (X1)", signal: "0x0100", icon: Shield },
+  { id: 1, label: "Left Click", action: "Primary Click", badge: "Default", icon: MousePointer2 },
+  { id: 2, label: "Right Click", action: "Secondary Click", badge: "Default", icon: MousePointer2 },
+  { id: 3, label: "Middle Click", action: "Wheel Click", badge: "Default", icon: MousePointer2 },
+  { id: 4, label: "Scroll Up", action: "Wheel Up", badge: "Default", icon: ChevronUp },
+  { id: 5, label: "Scroll Down", action: "Wheel Down", badge: "Default", icon: ChevronDown },
+  { id: 6, label: "Top Button", action: "DPI Stage Up", badge: "Default", icon: Crosshair },
+  { id: 7, label: "Bottom Button", action: "DPI Cycle", badge: "Default", icon: RotateCw },
+  { id: 8, label: "Forward Side", action: "Browser Forward", badge: "Default", icon: Shield },
+  { id: 9, label: "Backward Side", action: "Browser Back", badge: "Default", icon: Shield },
 ];
 
 export default function KeyBindingsView() {
   return (
-    <div className="grid h-full flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_460px] font-mono">
-      {/* Visual Button Map Stage */}
-      <section className="panel-instrument corner-reticle flex flex-1 flex-col items-center justify-between p-8 relative overflow-hidden">
-        <div className="flex w-full items-center justify-between border-b border-[#1b2230]/70 pb-3">
-          <span className="text-[10px] font-bold tracking-widest text-[#00b8fc]">
-            [ 03 // HARDWARE SCHEMATIC ]
-          </span>
-          <span className="badge-tech text-[#00b8fc]">
-            9-SWITCH MATRIX
+    <div className="grid h-full flex-1 gap-6 lg:grid-cols-[minmax(0,1fr)_460px]">
+      {/* Visual Button Map Stage Card */}
+      <section className="card-hardware relative flex flex-1 flex-col items-center justify-between p-8 overflow-hidden">
+        <div className="flex w-full items-center justify-between border-b border-[#2b2d32]/50 pb-4">
+          <div>
+            <h1 className="text-sm font-black tracking-wider text-white">
+              BUTTON MAPPING
+            </h1>
+            <p className="text-[11px] font-medium text-[#71717a] mt-0.5">
+              ON-BOARD EEPROM • 8 PROGRAMMED SWITCHES
+            </p>
+          </div>
+          <span className="rounded-full bg-[#1f2024] border border-[#2b2d32] px-3 py-1 text-xs font-bold text-[#00f0ff]">
+            8 BUTTONS
           </span>
         </div>
 
         {/* Real Mouse Graphic with high resolution button render */}
         <div className="my-auto flex w-full flex-1 items-center justify-center py-6">
-          <div className="pointer-events-none absolute -inset-4 bg-[#00b8fc]/5 blur-3xl" />
           <img
             src="/images/buttons-mouse.png"
             alt="KLIM Blaze Buttons Layout"
@@ -53,63 +57,63 @@ export default function KeyBindingsView() {
           />
         </div>
 
-        <div className="flex items-center gap-2 border border-[#1b2230] bg-[#07090e] px-4 py-2 text-[10px] text-[#55637e]">
-          <span className="h-1.5 w-1.5 rounded-none bg-[#00b8fc]" />
-          <span>MICROSWITCHES OMRON 20M RATED // ON-BOARD BUS PROTOCOL</span>
+        <div className="flex items-center gap-2 rounded-xl border border-[#2b2d32] bg-[#1f2024] px-5 py-3 text-xs text-[#9ca3af]">
+          <span className="h-2 w-2 rounded-full bg-[#00f0ff]" />
+          <span>Omron 20-million click rated switches embedded in firmware</span>
         </div>
       </section>
 
       {/* Buttons List & Information Column */}
       <div className="flex flex-col h-full space-y-4">
-        <section className="panel-instrument flex flex-1 flex-col overflow-hidden">
-          <div className="flex items-center justify-between border-b border-[#1b2230] px-4 py-3">
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#7987a4]">
-              HARDWARE ASSIGNMENTS
-            </span>
-            <span className="badge-tech text-[#65728a]">
-              READ-ONLY EEPROM
+        <section className="card-hardware flex flex-1 flex-col overflow-hidden p-0">
+          <div className="flex items-center justify-between border-b border-[#2b2d32] px-6 py-4">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-white">
+              ASSIGNED COMMANDS
+            </h2>
+            <span className="rounded-full bg-[#1f2024] border border-[#2b2d32] px-2.5 py-0.5 text-[10px] font-bold text-[#9ca3af]">
+              HARDWARE NATIVE
             </span>
           </div>
 
-          <div className="divide-y divide-[#171c26] flex-1 overflow-y-auto">
-            {BINDINGS.map(({ id, label, action, signal, icon: Icon }) => (
+          <div className="divide-y divide-[#24262c] flex-1 overflow-y-auto">
+            {BINDINGS.map(({ id, label, action, badge, icon: Icon }) => (
               <div
                 key={label}
-                className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-[#121620]"
+                className="flex items-center gap-4 px-6 py-3.5 transition-colors hover:bg-[#1f2024]"
               >
-                <div className="flex h-7 w-7 shrink-0 items-center justify-center border border-[#1f2636] bg-[#07090e] text-[#00b8fc]">
-                  <Icon size={13} />
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-[#2b2d32] bg-[#141518] text-[#00f0ff]">
+                  <Icon size={15} />
                 </div>
                 <div className="min-w-0 flex-1">
-                  <div className="flex items-center gap-1.5">
-                    <span className="text-[11px] font-bold text-[#00b8fc]">
-                      [B{id}]
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs font-bold text-[#00f0ff]">
+                      B{id}
                     </span>
                     <span className="text-xs font-bold text-white">
                       {label}
                     </span>
                   </div>
-                  <p className="truncate text-[10px] text-[#596680]">{action}</p>
+                  <p className="truncate text-xs text-[#71717a] mt-0.5">{action}</p>
                 </div>
-                <span className="text-[9px] font-mono text-[#4e5a73]">
-                  {signal}
+                <span className="rounded-full border border-[#2b2d32] bg-[#141518] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#9ca3af] uppercase">
+                  {badge}
                 </span>
               </div>
             ))}
           </div>
         </section>
 
-        {/* Informational Callout */}
-        <div className="border border-[#1b2230] bg-[#090b10] p-4">
-          <div className="flex items-start gap-2.5">
-            <span className="mt-0.5 flex h-6 w-6 shrink-0 items-center justify-center border border-[#00b8fc]/30 bg-[#00b8fc]/10 text-[#00b8fc]">
-              <Info size={13} />
+        {/* Informational Callout Card */}
+        <div className="card-hardware p-5">
+          <div className="flex items-start gap-3">
+            <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-[#00f0ff]/10 text-[#00f0ff] border border-[#00f0ff]/20">
+              <Info size={15} />
             </span>
-            <div className="text-[10px] leading-relaxed text-[#596680]">
+            <div className="text-xs leading-relaxed text-[#9ca3af]">
               <span className="font-bold text-white block mb-0.5">
-                ON-BOARD HARDWARE EXECUTION
+                On-Board Hardware Execution
               </span>
-              All button mappings are handled natively by the mouse controller without proprietary drivers or CPU overhead, ensuring ultra-low latency and maximum compatibility across all games and operating systems.
+              All button mappings are handled natively by the mouse controller without proprietary drivers or CPU background processes, ensuring zero latency and 100% compatibility across all games.
             </div>
           </div>
         </div>

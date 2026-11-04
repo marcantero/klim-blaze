@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --accent: 0 184 252;
+  --accent: 0 240 255;
   color-scheme: dark;
 }
 
@@ -14,113 +14,118 @@ body,
 }
 
 body {
-  @apply bg-[#08090d] text-[#eef1f6] antialiased;
-  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
-  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
-  background-size: 24px 24px;
+  @apply bg-[#0a0a0c] text-[#f4f4f5] antialiased;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
 }
 
 ::selection {
-  background: rgba(0, 184, 252, 0.35);
+  background: rgba(0, 240, 255, 0.35);
   color: #ffffff;
 }
 
 * {
   scrollbar-width: thin;
-  scrollbar-color: #202636 transparent;
+  scrollbar-color: #2b2d32 transparent;
 }
 
 ::-webkit-scrollbar {
-  width: 4px;
-  height: 4px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #1c2230;
-  border-radius: 0px;
+  background: #23252a;
+  border-radius: 9999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #2b354d;
+  background: #353840;
 }
 
-input[type="range"] {
-  accent-color: rgb(var(--accent));
-}
-
-input[type="color"] {
+/* Custom Logitech G HUB Slider with 4px track and solid white capsule thumb */
+input[type="range"].ghub-slider {
   -webkit-appearance: none;
   appearance: none;
-  border: none;
-  padding: 0;
   background: transparent;
+  cursor: pointer;
+  height: 20px;
 }
 
-input[type="color"]::-webkit-color-swatch-wrapper {
-  padding: 0;
+input[type="range"].ghub-slider:focus {
+  outline: none;
 }
 
-input[type="color"]::-webkit-color-swatch {
-  border: 1px solid #283145;
+/* Track styles */
+input[type="range"].ghub-slider::-webkit-slider-runnable-track {
+  height: 4px;
   border-radius: 2px;
+  background: #2a2b30;
+}
+
+input[type="range"].ghub-slider::-moz-range-track {
+  height: 4px;
+  border-radius: 2px;
+  background: #2a2b30;
+}
+
+/* Thumb styles - solid white capsule */
+input[type="range"].ghub-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  height: 18px;
+  width: 10px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  margin-top: -7px;
+  transition: transform 0.1s ease;
+}
+
+input[type="range"].ghub-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.15);
+}
+
+input[type="range"].ghub-slider::-moz-range-thumb {
+  border: none;
+  height: 18px;
+  width: 10px;
+  border-radius: 9999px;
+  background: #ffffff;
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.6);
+  transition: transform 0.1s ease;
+}
+
+input[type="range"].ghub-slider::-moz-range-thumb:hover {
+  transform: scale(1.15);
 }
 
 @layer components {
-  /* Industrial instrument container */
-  .panel-instrument {
-    @apply relative border border-[#1b212e] bg-[#0e1118]/95 shadow-sm;
+  /* Logitech G HUB Matte Card Surfaces */
+  .card-hardware {
+    @apply rounded-2xl border border-[#2b2d32] bg-[#18191c] p-6 shadow-none;
   }
 
-  /* Hairline reticle corner crosses */
-  .corner-reticle {
-    position: relative;
-  }
-  .corner-reticle::before {
-    content: "+";
-    position: absolute;
-    top: 4px;
-    left: 6px;
-    font-family: monospace;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.2);
-    pointer-events: none;
-  }
-  .corner-reticle::after {
-    content: "+";
-    position: absolute;
-    top: 4px;
-    right: 6px;
-    font-family: monospace;
-    font-size: 10px;
-    color: rgba(255, 255, 255, 0.2);
-    pointer-events: none;
+  .card-module {
+    @apply rounded-xl border border-[#2b2d32] bg-[#1f2024] p-4 transition-all duration-150;
   }
 
-  .field {
-    @apply rounded-sm border border-[#232a3b] bg-[#07080c] px-3 py-1.5 font-mono text-xs text-[#eef1f6]
-      outline-none transition-all placeholder:text-[#454f65]
-      focus:border-[#00b8fc] focus:ring-1 focus:ring-[#00b8fc]/30;
-  }
-
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-[#262e40]
-      bg-[#121620] px-3.5 py-1.5 font-mono text-xs uppercase tracking-wider text-[#cdd4e4] transition-all duration-150
-      hover:border-[#38435d] hover:bg-[#181d2a] hover:text-white
+  .btn-ghub {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg border border-[#2b2d32]
+      bg-[#1f2024] px-4 py-2 text-xs font-semibold tracking-wide text-[#e4e4e7]
+      transition-all duration-150 hover:brightness-110 hover:border-[#3f424a]
       active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40;
   }
 
-  .btn-primary {
-    @apply border-transparent text-[#050608] font-bold shadow-[0_0_15px_rgba(0,184,252,0.3)];
-    background-color: rgb(var(--accent));
+  .btn-ghub-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-lg bg-[#00f0ff]
+      px-5 py-2 text-xs font-bold tracking-wide text-black shadow-none
+      transition-all duration-150 hover:brightness-110 active:scale-[0.99]
+      disabled:pointer-events-none disabled:opacity-40;
   }
 
-  .btn-primary:hover {
-    background-color: rgba(0, 184, 252, 0.9);
-    @apply border-transparent text-[#050608] shadow-[0_0_20px_rgba(0,184,252,0.45)];
-  }
-
-  .badge-tech {
-    @apply inline-flex items-center gap-1 rounded-none border border-[#22293a] bg-[#0a0c12] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8894ab];
+  .field-ghub {
+    @apply rounded-lg border border-[#2b2d32] bg-[#141518] px-3 py-2 text-xs font-medium text-white
+      outline-none transition-all placeholder:text-[#52525b]
+      focus:border-[#00f0ff] focus:ring-1 focus:ring-[#00f0ff]/30;
   }
 }
-

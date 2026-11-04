@@ -26,17 +26,17 @@ const CONNECTION_META: Record<
   { label: string; bus: string; icon: LucideIcon; dot: string; text: string }
 > = {
   wireless: {
-    label: "2.4G LIGHTSPEED",
-    bus: "PID 0x1026",
+    label: "LIGHTSPEED 2.4G",
+    bus: "WIRELESS",
     icon: Wifi,
-    dot: "bg-[#00b8fc] shadow-[0_0_6px_#00b8fc]",
-    text: "text-[#00b8fc]",
+    dot: "bg-[#00f0ff]",
+    text: "text-[#00f0ff]",
   },
   connected: {
-    label: "USB DIRECT BUS",
-    bus: "PID 0x1016",
+    label: "USB WIRED",
+    bus: "WIRED",
     icon: Usb,
-    dot: "bg-emerald-400 shadow-[0_0_6px_#34d399]",
+    dot: "bg-emerald-400",
     text: "text-emerald-400",
   },
   disconnected: {
@@ -47,8 +47,8 @@ const CONNECTION_META: Record<
     text: "text-amber-400",
   },
   preview: {
-    label: "EMULATOR",
-    bus: "VIRTUAL BUS",
+    label: "PREVIEW",
+    bus: "VIRTUAL",
     icon: Monitor,
     dot: "bg-zinc-500",
     text: "text-zinc-400",
@@ -71,87 +71,83 @@ export default function TopBar({
   const batterySteps = batteryLevel !== null ? Math.round(batteryLevel / 10) : 0;
 
   return (
-    <header className="flex h-14 shrink-0 items-center justify-between border-b border-[#1b212e] bg-[#090b10] px-6 select-none font-mono">
-      {/* Device brand & technical index */}
-      <div className="flex items-center gap-5">
-        <div className="flex items-center gap-3">
-          <div className="flex items-baseline gap-2">
-            <span className="font-sans text-[13px] font-black tracking-[0.16em] text-white">
+    <header className="flex h-16 shrink-0 items-center justify-between border-b border-[#2b2d32]/60 bg-[#0a0a0c] px-8 select-none">
+      {/* Device Identity & Active Configuration */}
+      <div className="flex items-center gap-6">
+        <div>
+          <div className="flex items-center gap-2.5">
+            <span className="text-[14px] font-black tracking-wider text-white">
               {title.toUpperCase()}
             </span>
-            <span className="text-[10px] font-mono tracking-widest text-[#00b8fc]">
-              // INSTRUMENT
+            <span className="rounded-full bg-[#18191c] border border-[#2b2d32] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#9ca3af]">
+              {conn.bus}
             </span>
           </div>
-          <span className="badge-tech text-[#7c879c]">
-            {conn.bus}
-          </span>
-        </div>
-
-        <div className="hidden sm:flex items-center gap-2 border-l border-[#1a202c] pl-4 text-[10px] text-[#606b82]">
-          <span className="h-1.5 w-1.5 rounded-none bg-emerald-400" />
-          <span className="font-sans uppercase tracking-wider">{subtitle}</span>
+          <div className="flex items-center gap-2 mt-0.5 text-[11px] font-medium text-[#9ca3af]">
+            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+            <span>{subtitle}</span>
+          </div>
         </div>
       </div>
 
       {/* Hardware Telemetry: Battery Segment Bar + Protocol Link + Refresh */}
-      <div className="flex items-center gap-2.5">
-        {/* Discrete Hardware Battery Cell Segment Meter */}
+      <div className="flex items-center gap-3">
+        {/* Segmented Micro-dot VU Battery Meter */}
         <button
           type="button"
           onClick={onProbeBattery}
           disabled={batteryLoading}
-          title={battery?.note ?? "Probe battery ADC voltage telemetry"}
-          className="group flex items-center gap-3 rounded-none border border-[#1d2331] bg-[#0c0e14] px-3 py-1.5 text-xs transition-all hover:border-[#2d374d] hover:bg-[#11141d] disabled:opacity-50"
+          title={battery?.note ?? "Probe battery status"}
+          className="group flex items-center gap-3 rounded-lg border border-[#2b2d32] bg-[#18191c] px-3.5 py-2 transition-all hover:brightness-110 hover:border-[#3f424a] active:scale-[0.99] disabled:opacity-50"
         >
           <div className="flex items-center gap-1.5">
             {battery?.charging ? (
-              <BatteryCharging size={13} className="text-emerald-400" />
+              <BatteryCharging size={14} className="text-emerald-400" />
             ) : (
-              <Battery size={13} className="text-[#00b8fc]" />
+              <Battery size={14} className="text-[#00f0ff]" />
             )}
-            <span className="text-[10px] uppercase tracking-wider text-[#636e84]">
-              BAT:
+            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">
+              BATTERY
             </span>
           </div>
 
-          {/* 10 physical segments */}
-          <div className="flex items-center gap-[2px]">
+          {/* 10 micro-ticks */}
+          <div className="flex items-center gap-1">
             {Array.from({ length: 10 }).map((_, i) => {
               const active = i < batterySteps;
               const isLow = batteryLevel !== null && batteryLevel <= 20;
               return (
                 <span
                   key={i}
-                  className={`h-2.5 w-1 rounded-none transition-all ${
+                  className={`h-2.5 w-1 rounded-full transition-all ${
                     batteryLoading
-                      ? "animate-pulse bg-[#00b8fc]"
+                      ? "animate-pulse bg-[#00f0ff]"
                       : active
                       ? isLow
-                        ? "bg-red-400 shadow-[0_0_4px_#f87171]"
+                        ? "bg-red-400"
                         : battery?.charging
-                        ? "bg-emerald-400 shadow-[0_0_4px_#34d399]"
-                        : "bg-[#00b8fc] shadow-[0_0_4px_#00b8fc]"
-                      : "bg-[#181d28]"
+                        ? "bg-emerald-400"
+                        : "bg-[#00f0ff]"
+                      : "bg-[#2b2d32]"
                   }`}
                 />
               );
             })}
           </div>
 
-          <span className="font-mono text-[11px] font-bold text-white min-w-[32px] text-right">
-            {batteryLoading ? "..." : batteryLevel !== null ? `${batteryLevel}%` : "N/A"}
+          <span className="font-mono text-xs font-bold text-white min-w-[34px] text-right">
+            {batteryLoading ? "…" : batteryLevel !== null ? `${batteryLevel}%` : "—"}
           </span>
         </button>
 
-        {/* Link protocol badge */}
+        {/* Link protocol status pill */}
         <div
-          className="flex items-center gap-2 rounded-none border border-[#1d2331] bg-[#0c0e14] px-3 py-1.5 text-[10px] font-bold tracking-wider"
+          className="flex items-center gap-2 rounded-lg border border-[#2b2d32] bg-[#18191c] px-3.5 py-2 text-xs font-bold tracking-wider"
           title={conn.label}
         >
-          <span className={`h-1.5 w-1.5 rounded-none ${conn.dot}`} />
-          <ConnIcon size={12} className={conn.text} />
-          <span className={conn.text}>{conn.label}</span>
+          <span className={`h-2 w-2 rounded-full ${conn.dot}`} />
+          <ConnIcon size={13} className={conn.text} />
+          <span className="text-white text-[11px]">{conn.label}</span>
         </div>
 
         {/* Scan / Refresh Button */}
@@ -159,12 +155,12 @@ export default function TopBar({
           type="button"
           onClick={onRefresh}
           disabled={refreshing}
-          title="Rescan USB/HID hardware bus"
-          className="flex h-7 w-7 items-center justify-center rounded-none border border-[#1d2331] bg-[#0c0e14] text-[#69748b] transition-all hover:border-[#2f394f] hover:bg-[#121620] hover:text-white disabled:opacity-40"
+          title="Rescan hardware"
+          className="flex h-9 w-9 items-center justify-center rounded-lg border border-[#2b2d32] bg-[#18191c] text-[#9ca3af] transition-all hover:brightness-110 hover:border-[#3f424a] hover:text-white active:scale-[0.99] disabled:opacity-40"
         >
           <RefreshCw
-            size={12}
-            className={refreshing ? "animate-spin text-[#00b8fc]" : undefined}
+            size={13}
+            className={refreshing ? "animate-spin text-[#00f0ff]" : undefined}
           />
         </button>
       </div>

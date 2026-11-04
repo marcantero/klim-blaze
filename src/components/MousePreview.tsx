@@ -39,41 +39,31 @@ export default function MousePreview({
 
   return (
     <div
-      className={`relative mx-auto flex w-full flex-col items-center justify-center select-none font-mono ${className}`}
+      className={`relative mx-auto flex w-full flex-col items-center justify-center select-none ${className}`}
     >
-      {/* Precision CAD / Stage Viewport */}
+      {/* Central Hardware Stage Canvas */}
       <div className="relative flex w-full items-center justify-center py-6">
-        {/* Subtle engineering calibration grid behind mouse */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-25"
-        >
-          <div className="h-64 w-64 rounded-none border border-dashed border-[#222a3b]" />
-          <div className="absolute h-px w-full max-w-lg bg-[#1b2230]" />
-          <div className="absolute h-full max-h-[460px] w-px bg-[#1b2230]" />
-        </div>
-
-        {/* Ambient diffused underglow wrapping the entire mouse contour */}
+        {/* Soft diffused desk reflection / underglow */}
         {!off && (
           <div
             aria-hidden
             className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-700 ${animation}`}
             style={{ animationDuration: duration }}
           >
-            {/* Soft outer atmospheric ambient aura */}
+            {/* Outer diffused atmospheric aura */}
             <div
-              className={`rounded-full blur-[75px] transition-all duration-500 ${
-                currentView === "top" ? "h-[440px] w-[300px]" : "h-[300px] w-[460px]"
+              className={`rounded-full blur-[80px] transition-all duration-500 ${
+                currentView === "top" ? "h-[460px] w-[320px]" : "h-[320px] w-[480px]"
               }`}
               style={{
                 background: color,
                 opacity: mode === 2 ? 0.45 : 0.35,
               }}
             />
-            {/* Core diffused desk underglow embracing mouse perimeter */}
+            {/* Core diffused underglow following mouse perimeter */}
             <div
-              className={`absolute rounded-full blur-[40px] transition-all duration-500 ${
-                currentView === "top" ? "h-[340px] w-[220px]" : "h-[220px] w-[360px]"
+              className={`absolute rounded-full blur-[42px] transition-all duration-500 ${
+                currentView === "top" ? "h-[360px] w-[240px]" : "h-[240px] w-[380px]"
               }`}
               style={{
                 background: color,
@@ -96,7 +86,7 @@ export default function MousePreview({
               animationDuration: duration,
               filter: off
                 ? "drop-shadow(0 25px 35px rgba(0,0,0,0.95))"
-                : `drop-shadow(0 0 10px ${color}) drop-shadow(0 0 24px ${color}88) drop-shadow(0 20px 35px rgba(0,0,0,0.95))`,
+                : `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 26px ${color}88) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`,
             }}
           />
         </div>
@@ -104,28 +94,28 @@ export default function MousePreview({
 
       {/* Perspective Toggle Pill */}
       {showViewToggle && (
-        <div className="mt-1 flex items-center gap-1 border border-[#1d2331] bg-[#0c0e14] p-1 text-[10px]">
+        <div className="mt-2 flex items-center gap-1.5 rounded-full border border-[#2b2d32] bg-[#18191c] p-1 text-xs">
           <button
             type="button"
             onClick={() => setCurrentView("top")}
-            className={`px-3 py-1 font-mono uppercase tracking-wider transition-all ${
+            className={`rounded-full px-4 py-1.5 font-bold tracking-wider transition-all duration-150 ${
               currentView === "top"
-                ? "bg-[#00b8fc] text-[#050608] font-bold"
-                : "text-[#6b768c] hover:text-[#eef1f6]"
+                ? "bg-[#00f0ff] text-black shadow-none"
+                : "text-[#9ca3af] hover:text-white"
             }`}
           >
-            [ TOP VIEW ]
+            TOP VIEW
           </button>
           <button
             type="button"
             onClick={() => setCurrentView("side")}
-            className={`px-3 py-1 font-mono uppercase tracking-wider transition-all ${
+            className={`rounded-full px-4 py-1.5 font-bold tracking-wider transition-all duration-150 ${
               currentView === "side"
-                ? "bg-[#00b8fc] text-[#050608] font-bold"
-                : "text-[#6b768c] hover:text-[#eef1f6]"
+                ? "bg-[#00f0ff] text-black shadow-none"
+                : "text-[#9ca3af] hover:text-white"
             }`}
           >
-            [ SIDE VIEW ]
+            SIDE VIEW
           </button>
         </div>
       )}
