@@ -294,9 +294,8 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
 
           <div className="my-auto flex w-full flex-1 items-center justify-center py-6">
             <MousePreview
-              color={active.color}
-              mode={0}
-              speed={6}
+              logoColor={active.color}
+              showUnderglow={false}
               showViewToggle={true}
               className="w-full max-w-sm xl:max-w-md"
             />

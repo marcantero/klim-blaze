@@ -2,22 +2,26 @@ import { useState } from "react";
 import type { LightMode } from "../types";
 
 interface MousePreviewProps {
-  color: string;
-  mode: LightMode;
+  color?: string;
+  logoColor?: string;
+  mode?: LightMode;
   /** 1..10, controls the CSS animation duration. */
-  speed: number;
+  speed?: number;
   className?: string;
   view?: "top" | "side" | "buttons";
   showViewToggle?: boolean;
+  showUnderglow?: boolean;
 }
 
 export default function MousePreview({
   color,
-  mode,
-  speed,
+  logoColor,
+  mode = 0,
+  speed = 6,
   className = "",
   view: initialView = "top",
   showViewToggle = false,
+  showUnderglow = true,
 }: MousePreviewProps) {
   const [currentView, setCurrentView] = useState<"top" | "side">(
     initialView === "side" ? "side" : "top"
@@ -35,7 +39,10 @@ export default function MousePreview({
       : undefined;
 
   const imageSrc =
-    currentView === "top" ? "/images/top-mouse.png" : "/images/side-mouse.png";
+    currentView === "top" ? "/images/top-mouse-body.png" : "/images/side-mouse.png";
+
+  const effectiveLogoColor = logoColor || color;
+  const hasUnderglow = showUnderglow && !off && Boolean(color);
 
   return (
     <div
@@ -44,7 +51,7 @@ export default function MousePreview({
       {/* Central Hardware Stage Canvas */}
       <div className="relative flex w-full items-center justify-center py-6">
         {/* Soft diffused desk reflection / underglow */}
-        {!off && (
+        {hasUnderglow && color && (
           <div
             aria-hidden
             className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-700 ${animation}`}
@@ -75,20 +82,46 @@ export default function MousePreview({
 
         {/* Mouse Photo Render with exact contour drop-shadow */}
         <div className="relative z-10 flex items-center justify-center">
-          <img
-            src={imageSrc}
-            alt="KLIM Blaze Wireless Mouse"
-            draggable={false}
-            className={`max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
-              currentView === "side" ? "scale-95" : ""
-            } ${animation}`}
-            style={{
-              animationDuration: duration,
-              filter: off
-                ? "drop-shadow(0 25px 35px rgba(0,0,0,0.95))"
-                : `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 26px ${color}88) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`,
-            }}
-          />
+          <div className="relative flex items-center justify-center">
+            <img
+              src={imageSrc}
+              alt="KLIM Blaze Wireless Mouse"
+              draggable={false}
+              className={`block max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
+                currentView === "side" ? "scale-95" : ""
+              } ${hasUnderglow ? animation : ""}`}
+              style={{
+                animationDuration: duration,
+                filter:
+                  hasUnderglow && color
+                    ? `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 26px ${color}88) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`
+                    : "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
+              }}
+            />
+
+            {/* Glowing Logo LED Overlay (Exact alignment with mouse body) */}
+            {currentView === "top" && effectiveLogoColor && !off && (
+              <div
+                aria-hidden
+                className={`pointer-events-none absolute inset-0 z-20 transition-all duration-300 ${
+                  mode === 1 ? "animate-pulse-soft" : mode === 2 ? "animate-hue-cycle" : ""
+                }`}
+                style={{
+                  animationDuration: duration,
+                  backgroundColor: effectiveLogoColor,
+                  WebkitMaskImage: "url(/images/top-mouse-logo-mask.png)",
+                  WebkitMaskSize: "contain",
+                  WebkitMaskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskImage: "url(/images/top-mouse-logo-mask.png)",
+                  maskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  maskPosition: "center",
+                  filter: `drop-shadow(0 0 6px ${effectiveLogoColor}) drop-shadow(0 0 14px ${effectiveLogoColor}aa)`,
+                }}
+              />
+            )}
+          </div>
         </div>
       </div>
 
