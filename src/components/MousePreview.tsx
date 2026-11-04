@@ -43,6 +43,11 @@ export default function MousePreview({
   const imageSrc =
     currentView === "top" ? "/images/top-mouse-body.png" : "/images/side-mouse.png";
 
+  const contourMaskSrc =
+    currentView === "top"
+      ? "/images/mouse-contour-glow.png"
+      : "/images/side-mouse-contour-glow.png";
+
   const effectiveLogoColor = logoColor || color;
   const hasUnderglow = showUnderglow && !off;
 
@@ -52,22 +57,22 @@ export default function MousePreview({
     >
       {/* Central Hardware Stage Canvas */}
       <div className="relative flex w-full items-center justify-center py-6">
-        {/* MODE 2 (SPECTRUM): Continuous Multicolor Strip traveling around the mouse perimeter */}
+        {/* MODE 2 (SPECTRUM): Rich Desk Reflection matching Static intensity */}
         {hasUnderglow && isSpectrum && (
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-visible"
           >
-            {/* Broad outer atmospheric desk reflection (multicolor) */}
+            {/* Broad outer atmospheric desk reflection (rainbow) */}
             <div
               className={`absolute flex items-center justify-center transition-all duration-500 ${
                 currentView === "top"
-                  ? "scale-x-[0.68] scale-y-[1.06]"
-                  : "scale-x-[1.06] scale-y-[0.68]"
+                  ? "scale-x-[0.72] scale-y-[1.10]"
+                  : "scale-x-[1.10] scale-y-[0.72]"
               }`}
             >
               <div
-                className="h-[520px] w-[520px] rounded-full blur-[75px] opacity-50 animate-spin"
+                className="h-[560px] w-[560px] rounded-full blur-[70px] opacity-60 animate-spin"
                 style={{
                   background: RAINBOW_CONIC,
                   animationDuration: duration,
@@ -75,33 +80,16 @@ export default function MousePreview({
               />
             </div>
 
-            {/* Core diffused underglow strip */}
+            {/* Core diffused underglow pool (rainbow) */}
             <div
               className={`absolute flex items-center justify-center transition-all duration-500 ${
                 currentView === "top"
-                  ? "scale-x-[0.62] scale-y-[1.02]"
-                  : "scale-x-[1.02] scale-y-[0.62]"
+                  ? "scale-x-[0.66] scale-y-[1.04]"
+                  : "scale-x-[1.04] scale-y-[0.66]"
               }`}
             >
               <div
-                className="h-[430px] w-[430px] rounded-full blur-[32px] opacity-80 animate-spin"
-                style={{
-                  background: RAINBOW_CONIC,
-                  animationDuration: duration,
-                }}
-              />
-            </div>
-
-            {/* Tight vivid multicolor perimeter ribbon directly hugging mouse contour */}
-            <div
-              className={`absolute flex items-center justify-center transition-all duration-500 ${
-                currentView === "top"
-                  ? "scale-x-[0.58] scale-y-[0.98]"
-                  : "scale-x-[0.98] scale-y-[0.58]"
-              }`}
-            >
-              <div
-                className="h-[380px] w-[380px] rounded-full blur-[10px] opacity-95 animate-spin"
+                className="h-[460px] w-[460px] rounded-full blur-[35px] opacity-80 animate-spin"
                 style={{
                   background: RAINBOW_CONIC,
                   animationDuration: duration,
@@ -140,31 +128,51 @@ export default function MousePreview({
                 opacity: 0.55,
               }}
             />
-            {/* Tight contour halo following mouse perimeter */}
-            <div
-              className={`absolute rounded-full blur-[16px] transition-all duration-500 ${
-                currentView === "top" ? "h-[350px] w-[230px]" : "h-[230px] w-[370px]"
-              }`}
-              style={{
-                background: color,
-                opacity: 0.85,
-              }}
-            />
           </div>
         )}
 
         {/* Mouse Photo Render with exact contour drop-shadow */}
         <div className="relative z-10 flex items-center justify-center">
           <div className="relative flex items-center justify-center">
+            {/* SPECTRUM CONTOUR GLOW: Prominent rotating rainbow silhouette rim hugging the exact mouse shape */}
+            {hasUnderglow && isSpectrum && (
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 z-0 overflow-hidden"
+                style={{
+                  WebkitMaskImage: `url(${contourMaskSrc})`,
+                  WebkitMaskSize: "contain",
+                  WebkitMaskRepeat: "no-repeat",
+                  WebkitMaskPosition: "center",
+                  maskImage: `url(${contourMaskSrc})`,
+                  maskSize: "contain",
+                  maskRepeat: "no-repeat",
+                  maskPosition: "center",
+                  filter: "drop-shadow(0 0 10px rgba(255,255,255,0.7)) drop-shadow(0 0 20px rgba(255,255,255,0.4))",
+                }}
+              >
+                <div
+                  className="absolute -inset-[60%] animate-spin"
+                  style={{
+                    background: RAINBOW_CONIC,
+                    animationDuration: duration,
+                  }}
+                />
+              </div>
+            )}
+
             <img
               src={imageSrc}
               alt="KLIM Blaze Wireless Mouse"
               draggable={false}
-              className={`block max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
+              className={`relative z-10 block max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
                 currentView === "side" ? "scale-95" : ""
               }`}
               style={{
-                filter: "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
+                filter:
+                  hasUnderglow && !isSpectrum && color
+                    ? `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 26px ${color}88) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`
+                    : "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
               }}
             />
 
