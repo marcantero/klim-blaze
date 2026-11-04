@@ -140,6 +140,16 @@ export default function MousePreview({
                 opacity: 0.55,
               }}
             />
+            {/* Tight contour halo following mouse perimeter */}
+            <div
+              className={`absolute rounded-full blur-[16px] transition-all duration-500 ${
+                currentView === "top" ? "h-[350px] w-[230px]" : "h-[230px] w-[370px]"
+              }`}
+              style={{
+                background: color,
+                opacity: 0.85,
+              }}
+            />
           </div>
         )}
 
@@ -152,13 +162,9 @@ export default function MousePreview({
               draggable={false}
               className={`block max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
                 currentView === "side" ? "scale-95" : ""
-              } ${isBreathe ? "animate-pulse-soft" : ""}`}
+              }`}
               style={{
-                animationDuration: duration,
-                filter:
-                  hasUnderglow && !isSpectrum && color
-                    ? `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 26px ${color}88) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`
-                    : "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
+                filter: "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
               }}
             />
 
