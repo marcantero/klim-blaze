@@ -46,65 +46,59 @@ export default function MousePreview({
         {/* Subtle engineering calibration grid behind mouse */}
         <div
           aria-hidden
-          className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-30"
+          className="pointer-events-none absolute inset-0 flex items-center justify-center opacity-25"
         >
           <div className="h-64 w-64 rounded-none border border-dashed border-[#222a3b]" />
           <div className="absolute h-px w-full max-w-lg bg-[#1b2230]" />
           <div className="absolute h-full max-h-[460px] w-px bg-[#1b2230]" />
         </div>
 
-        {/* Ambient hardware illumination aura */}
-        <div
-          aria-hidden
-          className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-700 ${animation}`}
-          style={{ animationDuration: duration }}
-        >
-          {/* Main underglow halo */}
+        {/* Ambient diffused underglow wrapping the entire mouse contour */}
+        {!off && (
           <div
-            className="h-[300px] w-[340px] rounded-none blur-[80px] transition-all duration-500"
-            style={{
-              background: off ? "transparent" : color,
-              opacity: off ? 0 : mode === 2 ? 0.55 : 0.45,
-            }}
-          />
-          {/* Tail emission hotspot */}
-          <div
-            className="absolute bottom-10 h-[140px] w-[240px] rounded-none blur-[48px] transition-all duration-500"
-            style={{
-              background: off ? "transparent" : color,
-              opacity: off ? 0 : 0.65,
-            }}
-          />
-        </div>
+            aria-hidden
+            className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-700 ${animation}`}
+            style={{ animationDuration: duration }}
+          >
+            {/* Soft outer atmospheric ambient aura */}
+            <div
+              className={`rounded-full blur-[75px] transition-all duration-500 ${
+                currentView === "top" ? "h-[440px] w-[300px]" : "h-[300px] w-[460px]"
+              }`}
+              style={{
+                background: color,
+                opacity: mode === 2 ? 0.45 : 0.35,
+              }}
+            />
+            {/* Core diffused desk underglow embracing mouse perimeter */}
+            <div
+              className={`absolute rounded-full blur-[40px] transition-all duration-500 ${
+                currentView === "top" ? "h-[340px] w-[220px]" : "h-[220px] w-[360px]"
+              }`}
+              style={{
+                background: color,
+                opacity: mode === 2 ? 0.65 : 0.55,
+              }}
+            />
+          </div>
+        )}
 
-        {/* Mouse Photo Render */}
+        {/* Mouse Photo Render with exact contour drop-shadow */}
         <div className="relative z-10 flex items-center justify-center">
           <img
             src={imageSrc}
             alt="KLIM Blaze Wireless Mouse"
             draggable={false}
-            className={`max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain drop-shadow-[0_25px_40px_rgba(0,0,0,0.95)] transition-all duration-300 ${
+            className={`max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
               currentView === "side" ? "scale-95" : ""
-            }`}
+            } ${animation}`}
             style={{
+              animationDuration: duration,
               filter: off
                 ? "drop-shadow(0 25px 35px rgba(0,0,0,0.95))"
-                : `drop-shadow(0 25px 40px rgba(0,0,0,0.95)) drop-shadow(0 0 30px ${color}40)`,
+                : `drop-shadow(0 0 10px ${color}) drop-shadow(0 0 24px ${color}88) drop-shadow(0 20px 35px rgba(0,0,0,0.95))`,
             }}
           />
-
-          {/* Underglow base light bar reflection */}
-          {!off && (
-            <div
-              aria-hidden
-              className={`pointer-events-none absolute bottom-4 h-6 w-36 rounded-none blur-md transition-opacity duration-300 ${animation}`}
-              style={{
-                background: color,
-                opacity: mode === 1 ? 0.75 : 0.85,
-                animationDuration: duration,
-              }}
-            />
-          )}
         </div>
       </div>
 
