@@ -50,12 +50,14 @@ export default function MousePreview({
       className={`relative mx-auto flex w-full flex-col items-center justify-center select-none ${className}`}
     >
       {/* Central Hardware Stage Canvas */}
-      <div className="relative flex w-full items-center justify-center py-2 xl:py-4">
+      <div className="relative flex w-full items-center justify-center py-1 xl:py-2">
         {/* MODE 2 (SPECTRUM): Soft diffused desk reflection */}
         {hasUnderglow && isSpectrum && (
           <div
             aria-hidden
-            className="pointer-events-none absolute -inset-44 flex items-center justify-center overflow-visible"
+            className={`pointer-events-none absolute flex items-center justify-center ${
+              isSide ? "inset-0 overflow-hidden" : "-inset-28 overflow-visible"
+            }`}
             style={{
               WebkitMaskImage:
                 "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
@@ -64,9 +66,15 @@ export default function MousePreview({
             }}
           >
             {/* Broad outer atmospheric desk reflection (rainbow) */}
-            <div className="absolute flex items-center justify-center transition-all duration-500 scale-x-[0.72] scale-y-[1.10]">
+            <div
+              className={`absolute flex items-center justify-center transition-all duration-500 ${
+                isSide ? "scale-x-[1.3] scale-y-[0.6]" : "scale-x-[0.72] scale-y-[1.10]"
+              }`}
+            >
               <div
-                className="h-[560px] w-[560px] rounded-full blur-[90px] animate-spin"
+                className={`rounded-full animate-spin ${
+                  isSide ? "h-[320px] w-[320px] blur-[60px]" : "h-[560px] w-[560px] blur-[90px]"
+                }`}
                 style={{
                   background: RAINBOW_CONIC,
                   animationDuration: duration,
@@ -76,9 +84,15 @@ export default function MousePreview({
             </div>
 
             {/* Core diffused underglow pool (rainbow) */}
-            <div className="absolute flex items-center justify-center transition-all duration-500 scale-x-[0.66] scale-y-[1.04]">
+            <div
+              className={`absolute flex items-center justify-center transition-all duration-500 ${
+                isSide ? "scale-x-[1.2] scale-y-[0.55]" : "scale-x-[0.66] scale-y-[1.04]"
+              }`}
+            >
               <div
-                className="h-[460px] w-[460px] rounded-full blur-[65px] animate-spin"
+                className={`rounded-full animate-spin ${
+                  isSide ? "h-[240px] w-[240px] blur-[40px]" : "h-[460px] w-[460px] blur-[65px]"
+                }`}
                 style={{
                   background: RAINBOW_CONIC,
                   animationDuration: duration,
@@ -93,33 +107,58 @@ export default function MousePreview({
         {hasUnderglow && !isSpectrum && color && (
           <div
             aria-hidden
-            className={`pointer-events-none absolute -inset-44 flex items-center justify-center transition-all duration-700 ${
-              isBreathe ? "animate-pulse-soft" : ""
-            }`}
+            className={`pointer-events-none absolute flex items-center justify-center transition-all duration-700 ${
+              isSide ? "inset-0 overflow-hidden" : "-inset-28 overflow-visible"
+            } ${isBreathe ? "animate-pulse-soft" : ""}`}
             style={{
               animationDuration: duration,
-              WebkitMaskImage:
-                "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
-              maskImage:
-                "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
+              WebkitMaskImage: isSide
+                ? "radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.5) 60%, transparent 85%)"
+                : "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
+              maskImage: isSide
+                ? "radial-gradient(ellipse at center, rgba(0,0,0,1) 30%, rgba(0,0,0,0.5) 60%, transparent 85%)"
+                : "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
             }}
           >
-            {/* Outer diffused atmospheric aura */}
-            <div
-              className="rounded-full blur-[90px] transition-all duration-500 h-[460px] w-[320px]"
-              style={{
-                background: color,
-                opacity: 0.22 * brightnessFactor,
-              }}
-            />
-            {/* Core diffused underglow following mouse perimeter */}
-            <div
-              className="absolute rounded-full blur-[55px] transition-all duration-500 h-[360px] w-[240px]"
-              style={{
-                background: color,
-                opacity: 0.38 * brightnessFactor,
-              }}
-            />
+            {isSide ? (
+              <>
+                {/* Horizontal aura tailored to side mouse profile */}
+                <div
+                  className="rounded-full blur-[45px] transition-all duration-500 h-[130px] w-[380px]"
+                  style={{
+                    background: color,
+                    opacity: 0.32 * brightnessFactor,
+                  }}
+                />
+                {/* Concentrated base glow below mouse underglow bar */}
+                <div
+                  className="absolute rounded-full blur-[24px] transition-all duration-500 h-[50px] w-[300px] translate-y-6"
+                  style={{
+                    background: color,
+                    opacity: 0.48 * brightnessFactor,
+                  }}
+                />
+              </>
+            ) : (
+              <>
+                {/* Outer diffused atmospheric aura (top-down) */}
+                <div
+                  className="rounded-full blur-[80px] transition-all duration-500 h-[420px] w-[300px]"
+                  style={{
+                    background: color,
+                    opacity: 0.22 * brightnessFactor,
+                  }}
+                />
+                {/* Core diffused underglow following mouse perimeter */}
+                <div
+                  className="absolute rounded-full blur-[50px] transition-all duration-500 h-[320px] w-[220px]"
+                  style={{
+                    background: color,
+                    opacity: 0.38 * brightnessFactor,
+                  }}
+                />
+              </>
+            )}
           </div>
         )}
 
@@ -161,14 +200,14 @@ export default function MousePreview({
               draggable={false}
               className={`relative z-10 block w-auto object-contain transition-all duration-300 ${
                 isSide
-                  ? "max-h-[220px] md:max-h-[250px] lg:max-h-[280px] xl:max-h-[310px] 2xl:max-h-[340px] max-w-full"
+                  ? "max-h-[175px] md:max-h-[195px] xl:max-h-[220px] 2xl:max-h-[240px] max-w-full"
                   : "max-h-[280px] md:max-h-[320px] lg:max-h-[350px] xl:max-h-[390px] 2xl:max-h-[430px]"
               }`}
               style={{
                 filter:
                   hasUnderglow && !isSpectrum && color
-                    ? `drop-shadow(0 0 10px ${color}88) drop-shadow(0 0 20px ${color}44) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`
-                    : "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
+                    ? `drop-shadow(0 0 12px ${color}99) drop-shadow(0 0 24px ${color}44) drop-shadow(0 20px 30px rgba(0,0,0,0.9))`
+                    : "drop-shadow(0 20px 30px rgba(0,0,0,0.9))",
               }}
             />
           </div>

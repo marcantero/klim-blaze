@@ -358,8 +358,8 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
       {/* Right Column: Mouse Preview + Windows Pointer Controls */}
       <div className="flex flex-col gap-3.5">
         {/* Mouse Side Preview Card */}
-        <div className="card-hardware flex flex-col p-4 xl:p-4.5">
-          <div className="relative z-20 flex w-full items-center justify-between border-b border-[#2b2d32]/50 pb-2.5">
+        <div className="card-hardware relative overflow-hidden flex flex-col p-4 xl:p-4.5">
+          <div className="relative z-20 flex w-full items-center justify-between border-b border-[#2b2d32]/50 pb-2">
             <div>
               <h2 className="text-xs font-bold tracking-wider text-white uppercase">
                 OPTICAL SENSOR
@@ -376,17 +376,17 @@ export default function DpiView({ dpi, onChange }: DpiViewProps) {
             </span>
           </div>
 
-          <div className="my-2 flex w-full items-center justify-center py-2">
+          <div className="relative z-10 my-2 flex w-full items-center justify-center py-1">
             <MousePreview
               variant="side"
               logoColor={active.color}
               color={active.color}
               showUnderglow={true}
-              className="w-full max-w-[280px] xl:max-w-[320px] max-h-[135px] xl:max-h-[150px]"
+              className="w-full max-w-[460px] xl:max-w-[520px]"
             />
           </div>
 
-          <div className="relative z-20 flex w-full items-center justify-between rounded-lg border border-[#2b2d32] bg-[#141518] px-3.5 py-2 text-xs">
+          <div className="relative z-20 flex w-full items-center justify-between rounded-lg border border-[#2b2d32] bg-[#141518]/90 backdrop-blur-sm px-3.5 py-2 text-xs">
             <span className="text-[#9ca3af] font-medium">STAGE #{activeIndex + 1} ACTIVE</span>
             <span className="font-mono font-bold text-xs" style={{ color: active.color }}>
               {active.dpi.toLocaleString()} DPI
