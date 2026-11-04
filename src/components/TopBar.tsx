@@ -79,12 +79,12 @@ export default function TopBar({
             <span className="text-[14px] font-black tracking-wider text-white">
               {title.toUpperCase()}
             </span>
-            <span className="rounded-full bg-[#18191c] border border-[#2b2d32] px-2.5 py-0.5 text-[10px] font-bold tracking-wider text-[#9ca3af]">
+            <span className="rounded-full border border-[#2b2d32] bg-[#18191c] px-2.5 py-0.5 text-xs font-bold tracking-wider text-[#9ca3af]">
               {conn.bus}
             </span>
           </div>
-          <div className="flex items-center gap-2 mt-0.5 text-[11px] font-medium text-[#9ca3af]">
-            <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+          <div className="flex items-center gap-2 mt-0.5 text-xs font-medium text-[#9ca3af]">
+            <span className={`h-1.5 w-1.5 rounded-full ${conn.dot}`} />
             <span>{subtitle}</span>
           </div>
         </div>
@@ -106,7 +106,7 @@ export default function TopBar({
             ) : (
               <Battery size={14} className="text-[#00f0ff]" />
             )}
-            <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af]">
+            <span className="text-xs font-bold uppercase tracking-wider text-[#9ca3af]">
               BATTERY
             </span>
           </div>
@@ -124,10 +124,10 @@ export default function TopBar({
                       ? "animate-pulse bg-[#00f0ff]"
                       : active
                       ? isLow
-                        ? "bg-red-400"
+                        ? "bg-red-400 shadow-[0_0_6px_#f87171]"
                         : battery?.charging
                         ? "bg-emerald-400"
-                        : "bg-[#00f0ff]"
+                        : "bg-[#00f0ff] shadow-[0_0_6px_rgba(0,240,255,0.4)]"
                       : "bg-[#2b2d32]"
                   }`}
                 />
@@ -135,10 +135,9 @@ export default function TopBar({
             })}
           </div>
 
-          <span className="font-mono text-xs font-bold text-white min-w-[34px] text-right">
+          <span className="font-mono text-xs font-bold min-w-[34px] text-right text-white">
             {batteryLoading ? "…" : batteryLevel !== null ? `${batteryLevel}%` : "—"}
-          </span>
-        </button>
+          </span>        </button>
 
         {/* Link protocol status pill */}
         <div
@@ -147,7 +146,7 @@ export default function TopBar({
         >
           <span className={`h-2 w-2 rounded-full ${conn.dot}`} />
           <ConnIcon size={13} className={conn.text} />
-          <span className="text-white text-[11px]">{conn.label}</span>
+          <span className="text-white text-xs">{conn.label}</span>
         </div>
 
         {/* Scan / Refresh Button */}

@@ -153,7 +153,7 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
           onPointerDown={handlePointerDown}
           onPointerMove={handlePointerMove}
           onPointerUp={handlePointerUp}
-          className="relative h-44 flex-1 cursor-crosshair rounded-xl overflow-hidden touch-none select-none border border-[#2b2d32]"
+          className="relative h-28 xl:h-32 flex-1 cursor-crosshair rounded-xl overflow-hidden touch-none select-none border border-[#2b2d32]"
           style={{ backgroundColor: `hsl(${hsv.h}, 100%, 50%)` }}
         >
           {/* Horizontal white-to-transparent gradient */}
@@ -183,7 +183,7 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
         </div>
 
         {/* Vertical Rainbow Hue Slider */}
-        <div className="relative flex flex-col items-center w-8">
+        <div className="relative flex flex-col items-center w-7">
           <input
             type="range"
             min={0}
@@ -191,7 +191,7 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
             value={hsv.h}
             onChange={handleHueChange}
             aria-label="Color hue"
-            className="h-44 w-7 rounded-xl appearance-none cursor-pointer outline-none border border-[#2b2d32]"
+            className="h-28 xl:h-32 w-6 rounded-xl appearance-none cursor-pointer outline-none border border-[#2b2d32]"
             style={{
               writingMode: "vertical-lr",
               direction: "rtl",
@@ -206,7 +206,7 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
       <div className="grid grid-cols-[110px_1fr_1fr_1fr] gap-2 pt-1">
         {/* Hex input */}
         <div className="flex items-center rounded-lg border border-[#2b2d32] bg-[#141518] px-2.5 py-1.5 font-mono">
-          <span className="text-[11px] font-bold text-[#52525b] mr-1">#</span>
+          <span className="text-xs font-bold text-[#52525b] mr-1">#</span>
           <input
             type="text"
             value={hexDraft.replace(/^#/, "").toUpperCase()}
@@ -226,7 +226,7 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
             key={ch}
             className="flex items-center rounded-lg border border-[#2b2d32] bg-[#141518] px-2 py-1.5 font-mono"
           >
-            <span className="text-[10px] font-bold uppercase text-[#52525b] mr-1">
+            <span className="text-xs font-bold uppercase text-[#52525b] mr-1">
               {ch.toUpperCase()}:
             </span>
             <input
@@ -244,7 +244,7 @@ export default function ColorPicker({ value, onChange, disabled = false }: Color
 
       {/* Preset Palette Dots (Circular swatch pills with active white ring) */}
       <div className="pt-2">
-        <span className="text-[10px] font-bold uppercase tracking-wider text-[#9ca3af] block mb-2">
+        <span className="text-xs font-bold uppercase tracking-wider text-[#9ca3af] block mb-2">
           PRESETS
         </span>
         <div className="flex flex-wrap gap-2.5">

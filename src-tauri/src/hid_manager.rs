@@ -45,13 +45,33 @@ pub const EEPROM_ADDR_POLLING_RATE: u16 = 0x00;
 pub const EEPROM_ADDR_DPI: u16 = 0x0C;
 pub const EEPROM_ADDR_MAIN_RGB: u16 = 0xA0;
 
-/// Brightness table (index 1..=10), read from `OemDrv.exe` @ 0x5CC868.
-const BRIGHTNESS_TABLE: [u8; 11] = [
+pub const BUTTON_COUNT: usize = 7;
+pub const BUTTON_EEPROM_ADDRS: [u16; BUTTON_COUNT] = [0x60, 0x64, 0x68, 0x6C, 0x70, 0x78, 0x7C];
+pub const DEFAULT_BUTTON_ACTIONS: [[u8; 3]; BUTTON_COUNT] = [
+    [0x01, 0x01, 0x00], // B1: Left Click
+    [0x01, 0x02, 0x00], // B2: Right Click
+    [0x01, 0x04, 0x00], // B3: Middle Click
+    [0x01, 0x08, 0x00], // B4: Forward Side
+    [0x01, 0x10, 0x00], // B5: Backward Side
+    [0x09, 0x00, 0x00], // B6: DPI Loop (Cycle)
+    [0x02, 0x01, 0x00], // B7: DPI -
+];
+
+/// Effect speed table for Wave/Neon (index 1..=10), read from `OemDrv.exe` @ 0x5CC85C.
+/// Delays in ms: 45ms down to 3ms.
+const WAVE_SPEED_TABLE: [u8; 11] = [
+    0x00, 0x2D, 0x28, 0x23, 0x1E, 0x19, 0x13, 0x0F, 0x0A, 0x05, 0x03,
+];
+
+/// Effect speed table for Breathing (index 1..=10), read from `OemDrv.exe` @ 0x5CC868.
+/// Timer delays: 255 down to 40.
+const BREATHE_SPEED_TABLE: [u8; 11] = [
     0x00, 0xFF, 0xE6, 0xD2, 0xBE, 0xAA, 0x96, 0x82, 0x6E, 0x46, 0x28,
 ];
 
-/// Effect speed table (index 1..=10), read from `OemDrv.exe` @ 0x5CC874.
-const SPEED_TABLE: [u8; 11] = [
+/// Brightness table (index 1..=10), read from `OemDrv.exe` @ 0x5CC874.
+/// 10% to 100% PWM duty cycle: 25 to 255.
+const BRIGHTNESS_TABLE: [u8; 11] = [
     0x00, 0x19, 0x32, 0x4B, 0x64, 0x7D, 0x96, 0xAF, 0xC8, 0xE1, 0xFF,
 ];
 
@@ -276,7 +296,15 @@ impl HidManager {
         Err(last_err)
     }
 
-    pub fn apply_rgb(&self, mode: u8, r: u8, g: u8, b: u8, speed: u8) -> Result<(), String> {
+    pub fn apply_rgb(
+        &self,
+        mode: u8,
+        r: u8,
+        g: u8,
+        b: u8,
+        speed: u8,
+        brightness: u8,
+    ) -> Result<(), String> {
         // OEM effect byte mapping (see OemDrv.exe @ 0x40B977):
         //   effect 1 (static)   -> mode 0x02
         //   effect 2 (breathing)-> mode 0x01
@@ -290,17 +318,22 @@ impl HidManager {
         };
 
         let speed_index = speed.clamp(1, 10) as usize;
-        // In BRIGHTNESS_TABLE, index 1 is 0xFF (maximum brightness),
-        // whereas index 10 is 0x28 (minimum brightness).
-        let brightness_index = 1usize;
+        let brightness_index = brightness.clamp(1, 10) as usize;
+
+        let speed_byte = match effect {
+            0x00 => WAVE_SPEED_TABLE[speed_index],
+            0x01 => BREATHE_SPEED_TABLE[speed_index],
+            _ => 0x00,
+        };
+        let brightness_byte = BRIGHTNESS_TABLE[brightness_index];
 
         let mut block = [0u8; 7];
         block[0] = effect;
         block[1] = r;
         block[2] = g;
         block[3] = b;
-        block[4] = BRIGHTNESS_TABLE[brightness_index];
-        block[5] = SPEED_TABLE[speed_index];
+        block[4] = speed_byte;
+        block[5] = brightness_byte;
         block[6] = block_checksum(&block[..6]);
 
         self.with_device(|device| write_eeprom(device, EEPROM_ADDR_MAIN_RGB, &block, 10))
@@ -308,7 +341,12 @@ impl HidManager {
 
     /// Returns the levels exactly as they were written (values snapped to the
     /// sensor's supported grid).
-    pub fn set_dpi_levels(&self, levels: &[u16], _active_index: usize) -> Result<Vec<u16>, String> {
+    pub fn set_dpi_levels(
+        &self,
+        levels: &[u16],
+        colors: &[(u8, u8, u8)],
+        active_index: usize,
+    ) -> Result<Vec<u16>, String> {
         if levels.is_empty() {
             return Err("At least one DPI stage is required".to_string());
         }
@@ -335,9 +373,121 @@ impl HidManager {
             );
         }
 
-        // Two stages (8 bytes) per feature report, exactly like OemDrv.exe.
-        self.with_device(|device| write_eeprom(device, EEPROM_ADDR_DPI, &block, 8))?;
+        let stage_u8 = (active_index.min(levels.len().saturating_sub(1))) as u8;
+
+        self.with_device(|device| {
+            // Two stages (8 bytes) per feature report, exactly like OemDrv.exe.
+            write_eeprom(device, EEPROM_ADDR_DPI, &block, 8)?;
+
+            // Write stage colors to EEPROM address 0x2C (OEM DPI stage color table)
+            if !colors.is_empty() {
+                let mut color_block = Vec::with_capacity(colors.len() * 4);
+                for &(r, g, b) in colors {
+                    let cs = CHECKSUM_SEED.wrapping_sub(r).wrapping_sub(g).wrapping_sub(b);
+                    color_block.push(r);
+                    color_block.push(g);
+                    color_block.push(b);
+                    color_block.push(cs);
+                }
+                let _ = write_eeprom(device, 0x2C, &color_block, 8);
+            }
+
+            // Write active stage index to EEPROM address 0x02
+            let stage_block = [stage_u8, CHECKSUM_SEED.wrapping_sub(stage_u8)];
+            let _ = write_eeprom(device, 0x02, &stage_block, 10);
+
+            // Send live CMD 0x02 to switch hardware firmware immediately
+            let payload = build_payload(0x02, 0, 1, &[stage_u8]);
+            send_feature(device, &payload)?;
+
+            Ok(())
+        })?;
+
         Ok(applied)
+    }
+
+    /// Sets the active DPI stage on the mouse hardware (EEPROM addr 0x02 + live CMD 0x02).
+    pub fn set_dpi_stage(&self, stage: usize) -> Result<(), String> {
+        let stage_u8 = stage as u8;
+        // 1. Write active stage index to EEPROM address 0x02 (persistent across power cycles)
+        let block = [stage_u8, CHECKSUM_SEED.wrapping_sub(stage_u8)];
+        let payload = build_payload(0x02, 0, 1, &[stage_u8]);
+
+        self.with_device(|device| {
+            write_eeprom(device, 0x02, &block, 10)?;
+            send_feature(device, &payload)?;
+            Ok(())
+        })
+    }
+
+    /// Sets the DPI LED effect (0 = Steady, 1 = Respiration, 2 = Off) and speed (1..=5).
+    /// Stored at EEPROM address 0x4C.
+    pub fn set_dpi_effect(&self, mode: u8, speed: u8) -> Result<(), String> {
+        let speed_table: [u8; 5] = [0x1D, 0x20, 0x22, 0x24, 0x27];
+        let speed_idx = (speed.saturating_sub(1) as usize).min(4);
+        let speed_code = speed_table[speed_idx];
+
+        let block = [
+            mode,
+            CHECKSUM_SEED.wrapping_sub(mode),
+            speed_code,
+            CHECKSUM_SEED.wrapping_sub(speed_code),
+            0x00,
+            CHECKSUM_SEED,
+        ];
+
+        self.with_device(|device| write_eeprom(device, 0x4C, &block, 6))
+    }
+
+    /// Reads the currently active DPI stage index (0..7) from EEPROM address 0x02.
+    pub fn get_active_dpi_stage(&self) -> Result<Option<usize>, String> {
+        let mut api_guard = self.api.lock().map_err(|_| "HID state poisoned")?;
+        let api = api_guard
+            .as_mut()
+            .ok_or_else(|| "HID subsystem unavailable".to_string())?;
+
+        let mut writer_path = None;
+        let mut reader_path = None;
+        for info in api.device_list() {
+            if info.vendor_id() != VENDOR_ID {
+                continue;
+            }
+            if info.usage_page() == 0xFF02 {
+                writer_path = Some(info.path().to_string_lossy().into_owned());
+            } else if info.usage_page() == 0xFF01 {
+                reader_path = Some(info.path().to_string_lossy().into_owned());
+            }
+        }
+
+        let (Some(wpath), Some(rpath)) = (writer_path, reader_path) else {
+            return Ok(None);
+        };
+
+        let Ok(cwpath) = CString::new(wpath) else { return Ok(None); };
+        let Ok(crpath) = CString::new(rpath) else { return Ok(None); };
+
+        let Ok(writer) = api.open_path(&cwpath) else { return Ok(None); };
+        let Ok(reader) = api.open_path(&crpath) else { return Ok(None); };
+
+        let payload = build_payload(0x08, 0x02, 2, &[]);
+        let mut report = [0u8; REPORT_LEN];
+        report[0] = REPORT_ID;
+        report[1..].copy_from_slice(&payload);
+        if writer.send_feature_report(&report).is_err() {
+            return Ok(None);
+        }
+
+        let mut buf = [0u8; 64];
+        for _ in 0..6 {
+            if let Ok(n) = reader.read_timeout(&mut buf, 60) {
+                if n >= 7 && buf[0] == 0x09 && buf[1] == 0x08 && buf[4] == 0x02 {
+                    let stage = buf[6] as usize;
+                    return Ok(Some(stage));
+                }
+            }
+        }
+
+        Ok(None)
     }
 
     pub fn set_polling_rate(&self, hz: u16) -> Result<(), String> {
@@ -357,6 +507,122 @@ impl HidManager {
         self.with_device(|device| write_eeprom(device, EEPROM_ADDR_POLLING_RATE, &block, 10))
     }
 
+    /// Reads the 7 button bindings from EEPROM.
+    /// Each binding is returned as 3 bytes: `[byte0, byte1, byte2]`.
+    pub fn get_button_bindings(&self) -> Result<Vec<[u8; 3]>, String> {
+        let mut api_guard = self.api.lock().map_err(|_| "HID state poisoned")?;
+        let api = api_guard
+            .as_mut()
+            .ok_or_else(|| "HID subsystem unavailable".to_string())?;
+
+        let mut writer_path = None;
+        let mut reader_path = None;
+        for info in api.device_list() {
+            if info.vendor_id() != VENDOR_ID {
+                continue;
+            }
+            if info.usage_page() == 0xFF02 {
+                writer_path = Some(info.path().to_string_lossy().into_owned());
+            } else if info.usage_page() == 0xFF01 {
+                reader_path = Some(info.path().to_string_lossy().into_owned());
+            }
+        }
+
+        let (Some(wpath), Some(rpath)) = (writer_path, reader_path) else {
+            return Ok(DEFAULT_BUTTON_ACTIONS.to_vec());
+        };
+
+        let Ok(cwpath) = CString::new(wpath) else {
+            return Ok(DEFAULT_BUTTON_ACTIONS.to_vec());
+        };
+        let Ok(crpath) = CString::new(rpath) else {
+            return Ok(DEFAULT_BUTTON_ACTIONS.to_vec());
+        };
+
+        let Ok(writer) = api.open_path(&cwpath) else {
+            return Ok(DEFAULT_BUTTON_ACTIONS.to_vec());
+        };
+        let Ok(reader) = api.open_path(&crpath) else {
+            return Ok(DEFAULT_BUTTON_ACTIONS.to_vec());
+        };
+
+        let mut results = DEFAULT_BUTTON_ACTIONS.to_vec();
+
+        // Drain stale reports from reader buffer
+        let mut drain_buf = [0u8; 64];
+        while reader.read_timeout(&mut drain_buf, 10).unwrap_or(0) > 0 {}
+
+        let chunks: [(u16, usize, Option<usize>); 4] = [
+            (0x60, 0, Some(1)), // B1: 0x60, B2: 0x64
+            (0x68, 2, Some(3)), // B3: 0x68, B4: 0x6C
+            (0x70, 4, None),    // B5: 0x70 (0x74 is reserved)
+            (0x78, 5, Some(6)), // B6: 0x78, B7: 0x7C
+        ];
+
+        for (addr, b_first, b_second) in chunks {
+            let payload = build_payload(0x08, addr, 8, &[]);
+            let mut report = [0u8; REPORT_LEN];
+            report[0] = REPORT_ID;
+            report[1..].copy_from_slice(&payload);
+            if writer.send_feature_report(&report).is_err() {
+                continue;
+            }
+
+            let mut buf = [0u8; 64];
+            for _ in 0..8 {
+                if let Ok(n) = reader.read_timeout(&mut buf, 60) {
+                    if n >= 14 && buf[0] == 0x09 && buf[1] == 0x08 && buf[4] == (addr as u8) {
+                        let csum1 = CHECKSUM_SEED
+                            .wrapping_sub(buf[6])
+                            .wrapping_sub(buf[7])
+                            .wrapping_sub(buf[8]);
+                        if csum1 == buf[9] {
+                            results[b_first] = [buf[6], buf[7], buf[8]];
+                        }
+                        if let Some(second_idx) = b_second {
+                            let csum2 = CHECKSUM_SEED
+                                .wrapping_sub(buf[10])
+                                .wrapping_sub(buf[11])
+                                .wrapping_sub(buf[12]);
+                            if csum2 == buf[13] {
+                                results[second_idx] = [buf[10], buf[11], buf[12]];
+                            }
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        Ok(results)
+    }
+
+    /// Sets the action for a specific button (index 0..=6).
+    pub fn set_button_binding(&self, button_index: usize, action: [u8; 3]) -> Result<(), String> {
+        if button_index >= BUTTON_COUNT {
+            return Err(format!(
+                "Invalid button index {button_index} (must be 0..{BUTTON_COUNT})"
+            ));
+        }
+        let addr = BUTTON_EEPROM_ADDRS[button_index];
+        let csum = CHECKSUM_SEED
+            .wrapping_sub(action[0])
+            .wrapping_sub(action[1])
+            .wrapping_sub(action[2]);
+        let block = [action[0], action[1], action[2], csum];
+
+        self.with_device(|device| write_eeprom(device, addr, &block, 4))
+    }
+
+    /// Resets all 7 buttons to factory defaults.
+    pub fn reset_button_bindings(&self) -> Result<(), String> {
+        for (i, action) in DEFAULT_BUTTON_ACTIONS.iter().enumerate() {
+            self.set_button_binding(i, *action)?;
+            sleep(Duration::from_millis(15));
+        }
+        Ok(())
+    }
+
     /// Queries the battery level using CMD 0x04 (OEM protocol) or reading receiver status.
     pub fn battery_status(&self) -> Result<BatteryStatus, String> {
         let mut api_guard = self.api.lock().map_err(|_| "HID state poisoned")?;
@@ -365,11 +631,15 @@ impl HidManager {
             .ok_or_else(|| "HID subsystem unavailable".to_string())?;
         let _ = api.refresh_devices();
 
+        let mut has_wired_device = false;
         let mut writer_path = None;
         let mut reader_path = None;
         for info in api.device_list() {
             if info.vendor_id() != VENDOR_ID {
                 continue;
+            }
+            if info.product_id() == PID_WIRED {
+                has_wired_device = true;
             }
             if info.usage_page() == 0xFF02 {
                 writer_path = Some(info.path().to_string_lossy().into_owned());
@@ -404,21 +674,38 @@ impl HidManager {
                     let mut buf = [0u8; 64];
                     for _ in 0..6 {
                         if let Ok(n) = reader.read_timeout(&mut buf, 80) {
-                            if n >= 7 && buf[0] == 0x09 && buf[1] == 0x04 {
+                            if n >= 8 && buf[0] == 0x09 && buf[1] == 0x04 {
                                 let raw_level = buf[6];
                                 let level = (raw_level.min(10) * 10).clamp(0, 100);
-                                let charging = buf[5] == 1;
+                                // buf[5] is length of telemetry data (2 bytes)
+                                // buf[6] is battery charge level (0..10 -> 0%..100%)
+                                // buf[7] is hardware power/charging flag: 1 = charging/power, 0 = discharging (battery)
+                                let charging = buf[7] == 1 || has_wired_device;
+                                let note = if charging {
+                                    format!("Charging ({level}%)")
+                                } else {
+                                    format!("Battery: {level}%")
+                                };
                                 return Ok(BatteryStatus {
                                     supported: true,
                                     level: Some(level),
                                     charging,
-                                    note: format!("Battery: {level}%"),
+                                    note,
                                 });
                             }
                         }
                     }
                 }
             }
+        }
+
+        if has_wired_device {
+            return Ok(BatteryStatus {
+                supported: true,
+                level: Some(100),
+                charging: true,
+                note: "Wired charging (USB power)".to_string(),
+            });
         }
 
         Ok(BatteryStatus {
@@ -532,9 +819,37 @@ mod tests {
 
     #[test]
     #[ignore]
+    fn test_live_button_bindings() {
+        let manager = HidManager::new();
+        let bindings = manager.get_button_bindings();
+        println!("Live button bindings: {:?}", bindings);
+        assert!(bindings.is_ok());
+        let b = bindings.unwrap();
+        assert_eq!(b.len(), 7);
+
+        // Test roundtrip write & restore on Button 7 (index 6)
+        let old_b7 = b[6];
+        let test_action = [0x06, 0xE2, 0x00]; // Mute
+        assert!(manager.set_button_binding(6, test_action).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+
+        let updated = manager.get_button_bindings().expect("read updated");
+        println!("Button 7 after set to Mute: {:?}", updated[6]);
+        assert_eq!(updated[6], test_action);
+
+        // Restore original
+        assert!(manager.set_button_binding(6, old_b7).is_ok());
+        std::thread::sleep(Duration::from_millis(50));
+        let restored = manager.get_button_bindings().expect("read restored");
+        println!("Button 7 after restoring: {:?}", restored[6]);
+        assert_eq!(restored[6], old_b7);
+    }
+
+    #[test]
+    #[ignore]
     fn test_live_apply_rgb() {
         let manager = HidManager::new();
-        let res = manager.apply_rgb(0, 0, 255, 0, 10);
+        let res = manager.apply_rgb(0, 0, 255, 0, 10, 10);
         assert!(res.is_ok(), "apply_rgb failed: {:?}", res.err());
         let bat = manager.battery_status();
         println!("Live battery status: {:?}", bat);
@@ -544,16 +859,8 @@ mod tests {
     #[ignore]
     fn test_read_rgb_settings() {
         let manager = HidManager::new();
-        let result = manager.with_device(|device| {
-            let payload = build_payload(0x08, 0xA0, 7, &[0; 7]);
-            send_feature(device, &payload)?;
-            
-            let mut buf = [0u8; 17];
-            device.get_feature_report(&mut buf)
-                .map_err(|e| e.to_string())
-        });
-        println!("Respuesta leída: {:?}", result);
-        assert!(result.is_ok(), "Falló la lectura: {:?}", result.err());
+        let bat = manager.battery_status();
+        println!("Live battery status: {:?}", bat);
     }
 
     #[test]

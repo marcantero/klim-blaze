@@ -35,7 +35,7 @@ export default function Toast({ messages, onDismiss }: ToastProps) {
             <div className="min-w-0 flex-1">
               <p className="text-xs font-bold text-white tracking-wide">{message.title}</p>
               {message.detail && (
-                <p className="mt-0.5 break-words text-[11px] leading-relaxed text-[#9ca3af]">
+                <p className="mt-0.5 break-words text-xs leading-relaxed text-[#9ca3af]">
                   {message.detail}
                 </p>
               )}

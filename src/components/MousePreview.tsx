@@ -1,4 +1,3 @@
-import { useState } from "react";
 import type { LightMode } from "../types";
 
 interface MousePreviewProps {
@@ -7,10 +6,11 @@ interface MousePreviewProps {
   mode?: LightMode;
   /** 1..10, controls the CSS animation duration. */
   speed?: number;
+  /** 1..10, controls brightness (10% to 100%). */
+  brightness?: number;
   className?: string;
-  view?: "top" | "side" | "buttons";
-  showViewToggle?: boolean;
   showUnderglow?: boolean;
+  variant?: "top" | "side";
 }
 
 const RAINBOW_CONIC =
@@ -18,37 +18,31 @@ const RAINBOW_CONIC =
 
 export default function MousePreview({
   color,
-  logoColor,
+  logoColor: _logoColor,
   mode = 0,
   speed = 6,
+  brightness = 10,
   className = "",
-  view: initialView = "top",
-  showViewToggle = false,
   showUnderglow = true,
+  variant = "top",
 }: MousePreviewProps) {
-  const [currentView, setCurrentView] = useState<"top" | "side">(
-    initialView === "side" ? "side" : "top"
-  );
   const off = mode === 3;
   const isBreathe = mode === 1;
   const isSpectrum = mode === 2;
+  const brightnessFactor = Math.max(0.1, Math.min(1.0, brightness / 10));
 
-  // Dynamic timing according to speed slider (1..10)
+  // Dynamic timing according to speed slider (1..10) calibrated for realistic mouse hardware rate
   const duration = isBreathe
-    ? `${Math.max(1.0, 4.0 - speed * 0.28).toFixed(2)}s`
+    ? `${Math.max(0.4, 2.5 - speed * 0.21).toFixed(2)}s`
     : isSpectrum
-    ? `${Math.max(1.8, 8.5 - speed * 0.65).toFixed(2)}s`
-    : undefined;
+      ? `${Math.max(0.35, 4.0 - speed * 0.365).toFixed(2)}s`
+      : undefined;
 
-  const imageSrc =
-    currentView === "top" ? "/images/top-mouse-body.png" : "/images/side-mouse.png";
-
-  const contourMaskSrc =
-    currentView === "top"
-      ? "/images/mouse-contour-glow.png"
-      : "/images/side-mouse-contour-glow.png";
-
-  const effectiveLogoColor = logoColor || color;
+  const isSide = variant === "side";
+  const imageSrc = isSide ? "/images/side-mouse.png" : "/images/top-mouse.png";
+  const contourMaskSrc = isSide
+    ? "/images/side-mouse-contour-glow.png"
+    : "/images/mouse-contour-glow.png";
   const hasUnderglow = showUnderglow && !off;
 
   return (
@@ -56,43 +50,39 @@ export default function MousePreview({
       className={`relative mx-auto flex w-full flex-col items-center justify-center select-none ${className}`}
     >
       {/* Central Hardware Stage Canvas */}
-      <div className="relative flex w-full items-center justify-center py-6">
-        {/* MODE 2 (SPECTRUM): Rich Desk Reflection matching Static intensity */}
+      <div className="relative flex w-full items-center justify-center py-2 xl:py-4">
+        {/* MODE 2 (SPECTRUM): Soft diffused desk reflection */}
         {hasUnderglow && isSpectrum && (
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0 flex items-center justify-center overflow-visible"
+            className="pointer-events-none absolute -inset-44 flex items-center justify-center overflow-visible"
+            style={{
+              WebkitMaskImage:
+                "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
+              maskImage:
+                "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
+            }}
           >
             {/* Broad outer atmospheric desk reflection (rainbow) */}
-            <div
-              className={`absolute flex items-center justify-center transition-all duration-500 ${
-                currentView === "top"
-                  ? "scale-x-[0.72] scale-y-[1.10]"
-                  : "scale-x-[1.10] scale-y-[0.72]"
-              }`}
-            >
+            <div className="absolute flex items-center justify-center transition-all duration-500 scale-x-[0.72] scale-y-[1.10]">
               <div
-                className="h-[560px] w-[560px] rounded-full blur-[70px] opacity-60 animate-spin"
+                className="h-[560px] w-[560px] rounded-full blur-[90px] animate-spin"
                 style={{
                   background: RAINBOW_CONIC,
                   animationDuration: duration,
+                  opacity: 0.30 * brightnessFactor,
                 }}
               />
             </div>
 
             {/* Core diffused underglow pool (rainbow) */}
-            <div
-              className={`absolute flex items-center justify-center transition-all duration-500 ${
-                currentView === "top"
-                  ? "scale-x-[0.66] scale-y-[1.04]"
-                  : "scale-x-[1.04] scale-y-[0.66]"
-              }`}
-            >
+            <div className="absolute flex items-center justify-center transition-all duration-500 scale-x-[0.66] scale-y-[1.04]">
               <div
-                className="h-[460px] w-[460px] rounded-full blur-[35px] opacity-80 animate-spin"
+                className="h-[460px] w-[460px] rounded-full blur-[65px] animate-spin"
                 style={{
                   background: RAINBOW_CONIC,
                   animationDuration: duration,
+                  opacity: 0.40 * brightnessFactor,
                 }}
               />
             </div>
@@ -103,29 +93,31 @@ export default function MousePreview({
         {hasUnderglow && !isSpectrum && color && (
           <div
             aria-hidden
-            className={`pointer-events-none absolute inset-0 flex items-center justify-center transition-all duration-700 ${
+            className={`pointer-events-none absolute -inset-44 flex items-center justify-center transition-all duration-700 ${
               isBreathe ? "animate-pulse-soft" : ""
             }`}
-            style={{ animationDuration: duration }}
+            style={{
+              animationDuration: duration,
+              WebkitMaskImage:
+                "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
+              maskImage:
+                "radial-gradient(ellipse at center, rgba(0,0,0,1) 25%, rgba(0,0,0,0.6) 50%, transparent 70%)",
+            }}
           >
             {/* Outer diffused atmospheric aura */}
             <div
-              className={`rounded-full blur-[80px] transition-all duration-500 ${
-                currentView === "top" ? "h-[460px] w-[320px]" : "h-[320px] w-[480px]"
-              }`}
+              className="rounded-full blur-[90px] transition-all duration-500 h-[460px] w-[320px]"
               style={{
                 background: color,
-                opacity: 0.35,
+                opacity: 0.22 * brightnessFactor,
               }}
             />
             {/* Core diffused underglow following mouse perimeter */}
             <div
-              className={`absolute rounded-full blur-[42px] transition-all duration-500 ${
-                currentView === "top" ? "h-[360px] w-[240px]" : "h-[240px] w-[380px]"
-              }`}
+              className="absolute rounded-full blur-[55px] transition-all duration-500 h-[360px] w-[240px]"
               style={{
                 background: color,
-                opacity: 0.55,
+                opacity: 0.38 * brightnessFactor,
               }}
             />
           </div>
@@ -134,7 +126,7 @@ export default function MousePreview({
         {/* Mouse Photo Render with exact contour drop-shadow */}
         <div className="relative z-10 flex items-center justify-center">
           <div className="relative flex items-center justify-center">
-            {/* SPECTRUM CONTOUR GLOW: Prominent rotating rainbow silhouette rim hugging the exact mouse shape */}
+            {/* SPECTRUM CONTOUR GLOW: Subtle rotating rainbow silhouette rim hugging the exact mouse shape */}
             {hasUnderglow && isSpectrum && (
               <div
                 aria-hidden
@@ -148,7 +140,9 @@ export default function MousePreview({
                   maskSize: "contain",
                   maskRepeat: "no-repeat",
                   maskPosition: "center",
-                  filter: "drop-shadow(0 0 10px rgba(255,255,255,0.7)) drop-shadow(0 0 20px rgba(255,255,255,0.4))",
+                  opacity: 0.60 * brightnessFactor,
+                  filter:
+                    "drop-shadow(0 0 6px rgba(255,255,255,0.35)) drop-shadow(0 0 14px rgba(255,255,255,0.2))",
                 }}
               >
                 <div
@@ -165,78 +159,21 @@ export default function MousePreview({
               src={imageSrc}
               alt="KLIM Blaze Wireless Mouse"
               draggable={false}
-              className={`relative z-10 block max-h-[380px] xl:max-h-[460px] 2xl:max-h-[540px] w-auto object-contain transition-all duration-300 ${
-                currentView === "side" ? "scale-95" : ""
+              className={`relative z-10 block w-auto object-contain transition-all duration-300 ${
+                isSide
+                  ? "max-h-[220px] md:max-h-[250px] lg:max-h-[280px] xl:max-h-[310px] 2xl:max-h-[340px] max-w-full"
+                  : "max-h-[280px] md:max-h-[320px] lg:max-h-[350px] xl:max-h-[390px] 2xl:max-h-[430px]"
               }`}
               style={{
                 filter:
                   hasUnderglow && !isSpectrum && color
-                    ? `drop-shadow(0 0 12px ${color}) drop-shadow(0 0 26px ${color}88) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`
+                    ? `drop-shadow(0 0 10px ${color}88) drop-shadow(0 0 20px ${color}44) drop-shadow(0 25px 40px rgba(0,0,0,0.95))`
                     : "drop-shadow(0 25px 35px rgba(0,0,0,0.95))",
               }}
             />
-
-            {/* Glowing Logo LED Overlay (Exact alignment with mouse body) */}
-            {currentView === "top" && effectiveLogoColor && !off && (
-              <div
-                aria-hidden
-                className={`pointer-events-none absolute inset-0 z-20 transition-all duration-300 ${
-                  isBreathe
-                    ? "animate-pulse-soft"
-                    : isSpectrum && !logoColor
-                    ? "animate-hue-cycle"
-                    : ""
-                }`}
-                style={{
-                  animationDuration: duration,
-                  backgroundColor: isSpectrum && !logoColor ? "#00f0ff" : effectiveLogoColor,
-                  WebkitMaskImage: "url(/images/top-mouse-logo-mask.png)",
-                  WebkitMaskSize: "contain",
-                  WebkitMaskRepeat: "no-repeat",
-                  WebkitMaskPosition: "center",
-                  maskImage: "url(/images/top-mouse-logo-mask.png)",
-                  maskSize: "contain",
-                  maskRepeat: "no-repeat",
-                  maskPosition: "center",
-                  filter: `drop-shadow(0 0 6px ${
-                    isSpectrum && !logoColor ? "#00f0ff" : effectiveLogoColor
-                  }) drop-shadow(0 0 14px ${
-                    isSpectrum && !logoColor ? "#00f0ffaa" : effectiveLogoColor + "aa"
-                  })`,
-                }}
-              />
-            )}
           </div>
         </div>
       </div>
-
-      {/* Perspective Toggle Pill */}
-      {showViewToggle && (
-        <div className="mt-2 flex items-center gap-1.5 rounded-full border border-[#2b2d32] bg-[#18191c] p-1 text-xs">
-          <button
-            type="button"
-            onClick={() => setCurrentView("top")}
-            className={`rounded-full px-4 py-1.5 font-bold tracking-wider transition-all duration-150 ${
-              currentView === "top"
-                ? "bg-[#00f0ff] text-black shadow-none"
-                : "text-[#9ca3af] hover:text-white"
-            }`}
-          >
-            TOP VIEW
-          </button>
-          <button
-            type="button"
-            onClick={() => setCurrentView("side")}
-            className={`rounded-full px-4 py-1.5 font-bold tracking-wider transition-all duration-150 ${
-              currentView === "side"
-                ? "bg-[#00f0ff] text-black shadow-none"
-                : "text-[#9ca3af] hover:text-white"
-            }`}
-          >
-            SIDE VIEW
-          </button>
-        </div>
-      )}
     </div>
   );
 }

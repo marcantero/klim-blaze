@@ -1,1 +1,1 @@
-{"default":{"identifier":"default","description":"Default capabilities for the KLIM Blaze configurator window","local":true,"windows":["main"],"permissions":["core:default"]}}
+{"default":{"identifier":"default","description":"Default capabilities for the KLIM Blaze configurator window","local":true,"windows":["main","subtle-alert"],"permissions":["core:default","notification:default"]}}

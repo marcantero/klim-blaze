@@ -73,6 +73,7 @@ export function normalizeProfiles(input: unknown): Profile[] {
         b: clamp(Math.round(num(colorRaw.b, 248)), 0, 255),
       },
       speed: clamp(Math.round(num(lightingRaw.speed, 6)), 1, 10),
+      brightness: clamp(Math.round(num(lightingRaw.brightness, 10)), 1, 10),
     };
 
     const dpiRaw = isRecord(item.dpi) ? item.dpi : {};
