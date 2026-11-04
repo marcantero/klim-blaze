@@ -1,0 +1,126 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --accent: 0 184 252;
+  color-scheme: dark;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  @apply bg-[#08090d] text-[#eef1f6] antialiased;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+  background-image: radial-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+
+::selection {
+  background: rgba(0, 184, 252, 0.35);
+  color: #ffffff;
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #202636 transparent;
+}
+
+::-webkit-scrollbar {
+  width: 4px;
+  height: 4px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #1c2230;
+  border-radius: 0px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #2b354d;
+}
+
+input[type="range"] {
+  accent-color: rgb(var(--accent));
+}
+
+input[type="color"] {
+  -webkit-appearance: none;
+  appearance: none;
+  border: none;
+  padding: 0;
+  background: transparent;
+}
+
+input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+input[type="color"]::-webkit-color-swatch {
+  border: 1px solid #283145;
+  border-radius: 2px;
+}
+
+@layer components {
+  /* Industrial instrument container */
+  .panel-instrument {
+    @apply relative border border-[#1b212e] bg-[#0e1118]/95 shadow-sm;
+  }
+
+  /* Hairline reticle corner crosses */
+  .corner-reticle {
+    position: relative;
+  }
+  .corner-reticle::before {
+    content: "+";
+    position: absolute;
+    top: 4px;
+    left: 6px;
+    font-family: monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+  }
+  .corner-reticle::after {
+    content: "+";
+    position: absolute;
+    top: 4px;
+    right: 6px;
+    font-family: monospace;
+    font-size: 10px;
+    color: rgba(255, 255, 255, 0.2);
+    pointer-events: none;
+  }
+
+  .field {
+    @apply rounded-sm border border-[#232a3b] bg-[#07080c] px-3 py-1.5 font-mono text-xs text-[#eef1f6]
+      outline-none transition-all placeholder:text-[#454f65]
+      focus:border-[#00b8fc] focus:ring-1 focus:ring-[#00b8fc]/30;
+  }
+
+  .btn {
+    @apply inline-flex items-center justify-center gap-2 rounded-sm border border-[#262e40]
+      bg-[#121620] px-3.5 py-1.5 font-mono text-xs uppercase tracking-wider text-[#cdd4e4] transition-all duration-150
+      hover:border-[#38435d] hover:bg-[#181d2a] hover:text-white
+      active:scale-[0.99] disabled:pointer-events-none disabled:opacity-40;
+  }
+
+  .btn-primary {
+    @apply border-transparent text-[#050608] font-bold shadow-[0_0_15px_rgba(0,184,252,0.3)];
+    background-color: rgb(var(--accent));
+  }
+
+  .btn-primary:hover {
+    background-color: rgba(0, 184, 252, 0.9);
+    @apply border-transparent text-[#050608] shadow-[0_0_20px_rgba(0,184,252,0.45)];
+  }
+
+  .badge-tech {
+    @apply inline-flex items-center gap-1 rounded-none border border-[#22293a] bg-[#0a0c12] px-1.5 py-0.5 font-mono text-[9px] uppercase tracking-wider text-[#8894ab];
+  }
+}
+
